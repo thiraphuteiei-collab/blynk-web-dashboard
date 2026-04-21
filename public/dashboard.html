@@ -3,36 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard</title>
+  <title>แดชบอร์ด</title>
   <link rel="stylesheet" href="/css/app.css" />
 </head>
 <body>
   <div class="wrap">
     <div class="topbar">
       <div class="top-title">
-        <h1 id="deviceName">Smart Watering Control</h1>
-        <p>Dashboard overview</p>
+        <h1 id="deviceName">ระบบควบคุมรดน้ำอัจฉริยะ</h1>
+        <p>ภาพรวมการทำงานของระบบ</p>
       </div>
 
       <div class="top-actions">
-        <div class="pill">Online: <strong id="onlineText">Checking...</strong></div>
-        <div class="pill">Last updated: <strong id="lastUpdated">-</strong></div>
-        <div class="pill">User: <strong id="currentUser">-</strong></div>
-        <a class="btn btn-light" href="/profile.html">Profile</a>
-        <button class="btn btn-danger" type="button" onclick="logout()">Logout</button>
+        <div class="pill">สถานะ: <strong id="onlineText">กำลังตรวจสอบ...</strong></div>
+        <div class="pill">อัปเดตล่าสุด: <strong id="lastUpdated">-</strong></div>
+        <div class="pill">ผู้ใช้: <strong id="currentUser">-</strong></div>
+        <a class="btn btn-light" href="/profile.html">โปรไฟล์</a>
+        <button class="btn btn-danger" type="button" onclick="logout()">ออกจากระบบ</button>
       </div>
     </div>
 
     <section class="grid-3">
       <div class="card">
-        <h3>Pump</h3>
-        <div class="card-sub">Main control</div>
+        <h3>ปั๊มน้ำ</h3>
+        <div class="card-sub">ควบคุมการทำงานหลัก</div>
         <button id="pumpButton" class="pump-btn" type="button">OFF</button>
       </div>
 
       <div class="card">
-        <h3>Auto Mode</h3>
-        <div class="card-sub" id="autoModeLabel">Disabled</div>
+        <h3>โหมดอัตโนมัติ</h3>
+        <div class="card-sub" id="autoModeLabel">ปิดอยู่</div>
         <div class="row-between">
           <span></span>
           <label class="switch">
@@ -43,25 +43,25 @@
       </div>
 
       <div class="card">
-        <h3>Alert</h3>
-        <div class="card-sub">System alert</div>
+        <h3>การแจ้งเตือน</h3>
+        <div class="card-sub">สถานะล่าสุดของระบบ</div>
         <div id="alertText" class="metric-value">-</div>
       </div>
     </section>
 
     <section class="grid-3">
       <div class="card metric-card">
-        <div class="metric-label">Soil Moisture</div>
+        <div class="metric-label">ความชื้นดิน</div>
         <div id="soilValue" class="metric-value soil">0</div>
       </div>
 
       <div class="card metric-card">
-        <div class="metric-label">Water Level</div>
+        <div class="metric-label">ระดับน้ำ</div>
         <div id="waterValue" class="metric-value water">0</div>
       </div>
 
       <div class="card metric-card">
-        <div class="metric-label">Temperature</div>
+        <div class="metric-label">อุณหภูมิ</div>
         <div id="tempValue" class="metric-value temp">0</div>
       </div>
     </section>
@@ -70,18 +70,18 @@
       <div class="card">
         <div class="row-between" style="margin-bottom:12px;">
           <div>
-            <h3 style="margin-bottom:6px;">Recent Activity</h3>
-            <div class="card-sub" style="margin:0;">System history log</div>
+            <h3 style="margin-bottom:6px;">ประวัติการทำงานล่าสุด</h3>
+            <div class="card-sub" style="margin:0;">บันทึกการทำงานของระบบ</div>
           </div>
-          <button id="refreshHistoryButton" class="btn btn-light" type="button">Refresh</button>
+          <button id="refreshHistoryButton" class="btn btn-light" type="button">รีเฟรช</button>
         </div>
 
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Time</th>
-                <th>Message</th>
+                <th>เวลา</th>
+                <th>รายการ</th>
               </tr>
             </thead>
             <tbody id="historyBody"></tbody>
@@ -90,12 +90,12 @@
       </div>
 
       <div class="card">
-        <h3>System Status</h3>
-        <div class="card-sub">Quick overview</div>
+        <h3>สถานะระบบ</h3>
+        <div class="card-sub">สรุปแบบรวดเร็ว</div>
         <div class="user-box">
-          <div class="user-row"><span>Pump</span><strong id="pumpStatus">OFF</strong></div>
-          <div class="user-row"><span>Auto Mode</span><strong id="autoStatus">OFF</strong></div>
-          <div class="user-row"><span>Alert</span><strong id="alertStatus">-</strong></div>
+          <div class="user-row"><span>ปั๊มน้ำ</span><strong id="pumpStatus">OFF</strong></div>
+          <div class="user-row"><span>โหมดอัตโนมัติ</span><strong id="autoStatus">OFF</strong></div>
+          <div class="user-row"><span>การแจ้งเตือน</span><strong id="alertStatus">-</strong></div>
         </div>
       </div>
     </section>
@@ -139,7 +139,7 @@
       el.pumpButton.textContent = state.values.pump ? "ON" : "OFF";
       el.pumpButton.classList.toggle("on", state.values.pump);
       el.autoModeSwitch.checked = !!state.values.autoMode;
-      el.autoModeLabel.textContent = state.values.autoMode ? "Enabled" : "Disabled";
+      el.autoModeLabel.textContent = state.values.autoMode ? "เปิดอยู่" : "ปิดอยู่";
       el.alertText.textContent = state.values.alert || "-";
       el.soilValue.textContent = Number(state.values.soil || 0).toLocaleString();
       el.waterValue.textContent = Number(state.values.water || 0).toLocaleString();
@@ -152,7 +152,7 @@
     function renderHistory(items) {
       el.historyBody.innerHTML = "";
       if (!items.length) {
-        el.historyBody.innerHTML = `<tr><td colspan="2">No recent activity</td></tr>`;
+        el.historyBody.innerHTML = `<tr><td colspan="2">ยังไม่มีประวัติการทำงาน</td></tr>`;
         return;
       }
 
@@ -169,7 +169,7 @@
     async function loadStatus() {
       const data = await fetchJson("/api/status");
       state.values = data.values;
-      el.onlineText.textContent = "Online";
+      el.onlineText.textContent = "ออนไลน์";
       el.lastUpdated.textContent = formatDateTime(data.updatedAt);
       renderStatus();
     }
@@ -211,7 +211,7 @@
         try {
           await loadStatus();
         } catch {
-          el.onlineText.textContent = "Offline";
+          el.onlineText.textContent = "ออฟไลน์";
         }
       }, state.refreshMs);
     })();
