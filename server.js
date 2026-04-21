@@ -9,23 +9,21 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BLYNK_BASE_URL = process.env.BLYNK_BASE_URL || "https://blynk.cloud";
-const BLYNK_TOKEN = process.env.BLYNK_AUTH_TOKEN || "NUIgGSv_S0Bl2k2liK83WX-4FIjo35wk";
+const BLYNK_TOKEN = process.env.BLYNK_AUTH_TOKEN || "";
 const LOGIN_USERNAME = process.env.LOGIN_USERNAME || "admin";
 const LOGIN_PASSWORD = process.env.LOGIN_PASSWORD || "1234";
 const HISTORY_INTERVAL_MS = Number(process.env.HISTORY_INTERVAL_MS || 300000);
 const HISTORY_MAX_ITEMS = Number(process.env.HISTORY_MAX_ITEMS || 500);
-const HISTORY_FILE = path.join(__dirname, "history.json");
 
-if (!BLYNK_TOKEN) {
-  console.warn("[WARN] Missing BLYNK_AUTH_TOKEN in environment variables");
-}
+const HISTORY_FILE = path.join(__dirname, "history.json");
+const USERS_FILE = path.join(__dirname, "users.json");
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 const DASHBOARD_CONFIG = {
-  deviceName: process.env.DEVICE_NAME || "Quickstart Device",
+  deviceName: process.env.DEVICE_NAME || "Smart Garden Dashboard",
   refreshMs: Number(process.env.REFRESH_MS || 5000),
   historyIntervalMs: HISTORY_INTERVAL_MS,
   pins: {
@@ -47,31 +45,26 @@ const DASHBOARD_CONFIG = {
 };
 
 let historyCache = [];
+let usersCache = [];
 
-function ensureHistoryFile() {
-  if (!fs.existsSync(HISTORY_FILE)) {
-    fs.writeFileSync(HISTORY_FILE, "[]", "utf8");
+function ensureJsonFile(filePath, defaultValue) {
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, JSON.stringify(defaultValue, null, 2), "utf8");
   }
 }
 
 function loadHistory() {
   try {
-    ensureHistoryFile();
-    const raw = fs.readFileSync(HISTORY_FILE, "utf8");
-    const data = JSON.parse(raw);
-    historyCache = Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error("[HISTORY] Failed to load history:", error.message);
+    ensureJsonFile(HISTORY_FILE, []);
+    historyCache = JSON.parse(fs.readFileSync(HISTORY_FILE, "utf8"));
+    if (!Array.isArray(historyCache)) historyCache = [];
+  } catch {
     historyCache = [];
   }
 }
 
 function saveHistory() {
-  try {
-    fs.writeFileSync(HISTORY_FILE, JSON.stringify(historyCache, null, 2), "utf8");
-  } catch (error) {
-    console.error("[HISTORY] Failed to save history:", error.message);
-  }
+  fs.writeFileSync(HISTORY_FILE, JSON.stringify(historyCache, null, 2), "utf8");
 }
 
 function addHistory(entry) {
@@ -80,6 +73,39 @@ function addHistory(entry) {
     historyCache = historyCache.slice(0, HISTORY_MAX_ITEMS);
   }
   saveHistory();
+}
+
+function loadUsers() {
+  try {
+    ensureJsonFile(USERS_FILE, []);
+    usersCache = JSON.parse(fs.readFileSync(USERS_FILE, "utf8"));
+    if (!Array.isArray(usersCache)) usersCache = [];
+  } catch {
+    usersCache = [];
+  }
+}
+
+function saveUsers() {
+  fs.writeFileSync(USERS_FILE, JSON.stringify(usersCache, null, 2), "utf8");
+}
+
+function upsertUserLogin(username) {
+  const now = new Date().toISOString();
+  const found = usersCache.find((u) => u.username === username);
+
+  if (found) {
+    found.loginCount = Number(found.loginCount || 0) + 1;
+    found.lastLoginAt = now;
+  } else {
+    usersCache.push({
+      username,
+      createdAt: now,
+      lastLoginAt: now,
+      loginCount: 1
+    });
+  }
+
+  saveUsers();
 }
 
 function normalizePin(pin) {
@@ -123,7 +149,7 @@ function parseNumber(value, fallback = 0) {
   return Number.isFinite(num) ? num : fallback;
 }
 
-function computeWaterAlertLabel(rawValue) {
+function computeAlertLabel(rawValue) {
   const value = String(rawValue || "").trim().toLowerCase();
 
   if (["0", "low", "empty", "น้ำหมด", "น้ำต่ำ"].includes(value)) {
@@ -162,7 +188,7 @@ async function fetchBlynkSnapshot() {
       soil: parseNumber(soilRaw),
       water: parseNumber(waterRaw),
       temp: parseNumber(tempRaw),
-      alert: computeWaterAlertLabel(alertRaw)
+      alert: computeAlertLabel(alertRaw)
     }
   };
 }
@@ -174,9 +200,8 @@ async function collectHistorySnapshot() {
       timestamp: snapshot.updatedAt,
       values: snapshot.values
     });
-    console.log("[HISTORY] Snapshot saved:", snapshot.updatedAt);
   } catch (error) {
-    console.error("[HISTORY] Snapshot failed:", error.message);
+    console.error("[HISTORY]", error.message);
   }
 }
 
@@ -188,17 +213,28 @@ app.post("/api/login", (req, res) => {
   const username = String(req.body?.username || "").trim();
   const password = String(req.body?.password || "").trim();
 
-  if (username === LOGIN_USERNAME && password === LOGIN_PASSWORD) {
-    return res.json({
-      success: true,
-      token: "logged-in",
-      username: LOGIN_USERNAME
+  if (username !== LOGIN_USERNAME || password !== LOGIN_PASSWORD) {
+    return res.status(401).json({
+      success: false,
+      error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง"
     });
   }
 
-  return res.status(401).json({
-    success: false,
-    error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง"
+  upsertUserLogin(username);
+
+  const user = usersCache.find((u) => u.username === username);
+
+  return res.json({
+    success: true,
+    token: "logged-in",
+    user
+  });
+});
+
+app.get("/api/users", (req, res) => {
+  res.json({
+    success: true,
+    users: usersCache
   });
 });
 
@@ -212,7 +248,7 @@ app.get("/api/status", async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: error.message || "Failed to fetch Blynk data"
+      error: error.message || "Failed to fetch status"
     });
   }
 });
@@ -220,41 +256,38 @@ app.get("/api/status", async (req, res) => {
 app.get("/api/history", (req, res) => {
   res.json({
     success: true,
-    intervalMs: HISTORY_INTERVAL_MS,
-    count: historyCache.length,
     items: historyCache
   });
 });
 
 app.post("/api/toggle/pump", async (req, res) => {
   try {
-    if (!BLYNK_TOKEN) {
-      return res.status(500).json({ success: false, error: "BLYNK_AUTH_TOKEN is missing" });
-    }
-
     const nextValue = req.body?.value ? 1 : 0;
     await setValue(DASHBOARD_CONFIG.pins.pump, nextValue);
     res.json({ success: true, value: nextValue });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message || "Failed to update pump" });
+    res.status(500).json({
+      success: false,
+      error: error.message || "Failed to update pump"
+    });
   }
 });
 
 app.post("/api/toggle/auto-mode", async (req, res) => {
   try {
-    if (!BLYNK_TOKEN) {
-      return res.status(500).json({ success: false, error: "BLYNK_AUTH_TOKEN is missing" });
-    }
-
     const nextValue = req.body?.value ? 1 : 0;
     await setValue(DASHBOARD_CONFIG.pins.autoMode, nextValue);
     res.json({ success: true, value: nextValue });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message || "Failed to update auto mode" });
+    res.status(500).json({
+      success: false,
+      error: error.message || "Failed to update auto mode"
+    });
   }
 });
 
 loadHistory();
+loadUsers();
 collectHistorySnapshot();
 setInterval(collectHistorySnapshot, HISTORY_INTERVAL_MS);
 
