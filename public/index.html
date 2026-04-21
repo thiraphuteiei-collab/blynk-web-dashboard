@@ -1,199 +1,136 @@
-<!DOCTYPE html>
+ill"><strong>ล่าสุด:</strong> <span id="lastUpdatedMini">-</span></div>
+        </div>
+        <div class="ale<!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blynk Smart Garden Dashboard</title>
+  <title>Smart Garden Dashboard</title>
   <style>
     :root {
-      --bg: #f3f5f7;
-      --card: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-      --teal: #19c2c9;
-      --orange: #ff5a1f;
-      --lime: #b4ea25;
-      --grayRing: #e5e7eb;
-      --danger: #ef4444;
+      --bg: #f6f8fb;
+      --surface: rgba(255,255,255,0.85);
+      --surface-strong: #ffffff;
+      --text: #142033;
+      --muted: #6d7a8c;
+      --line: rgba(20,32,51,0.08);
+      --shadow: 0 20px 50px rgba(18, 33, 60, 0.10);
+      --primary: #4f8cff;
+      --primary-2: #7aa8ff;
       --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --soil: #ff7a45;
+      --water: #19c2c9;
+      --temp: #b7e61d;
+      --card-radius: 24px;
     }
+
+    body.theme-1 { --bg:#f6f8fb; --surface:rgba(255,255,255,0.86); --surface-strong:#fff; --text:#142033; --muted:#6d7a8c; --primary:#4f8cff; --primary-2:#7aa8ff; }
+    body.theme-2 { --bg:#f7f8f4; --surface:rgba(255,255,255,0.9); --surface-strong:#fff; --text:#1d2a20; --muted:#6f7f70; --primary:#5c8f6a; --primary-2:#7fb08d; }
+    body.theme-3 { --bg:#fbf7f5; --surface:rgba(255,255,255,0.9); --surface-strong:#fff; --text:#32221f; --muted:#8a7772; --primary:#d98c7c; --primary-2:#eab0a4; }
+    body.theme-4 { --bg:#f5f8fc; --surface:rgba(255,255,255,0.9); --surface-strong:#fff; --text:#1c273a; --muted:#6c7892; --primary:#6f7cf7; --primary-2:#99a3ff; }
+    body.theme-5 { --bg:#f9fafb; --surface:rgba(255,255,255,0.9); --surface-strong:#fff; --text:#1f2937; --muted:#6b7280; --primary:#0ea5e9; --primary-2:#67e8f9; }
+    body.theme-6 { --bg:#f7f6fc; --surface:rgba(255,255,255,0.9); --surface-strong:#fff; --text:#241b3c; --muted:#7d74a0; --primary:#8b5cf6; --primary-2:#c4b5fd; }
+    body.theme-7 { --bg:#faf8f3; --surface:rgba(255,255,255,0.92); --surface-strong:#fff; --text:#33261b; --muted:#8b7a69; --primary:#d4a373; --primary-2:#edc4a0; }
+    body.theme-8 { --bg:#f4fbfb; --surface:rgba(255,255,255,0.9); --surface-strong:#fff; --text:#163133; --muted:#618084; --primary:#14b8a6; --primary-2:#5eead4; }
+    body.theme-9 { --bg:#f7f7f7; --surface:rgba(255,255,255,0.92); --surface-strong:#fff; --text:#202020; --muted:#6b6b6b; --primary:#3f83f8; --primary-2:#93c5fd; }
 
     * { box-sizing: border-box; }
 
+    html, body { margin: 0; min-height: 100%; }
+
     body {
-      margin: 0;
       font-family: "Segoe UI", Tahoma, sans-serif;
-      background: var(--bg);
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.8), transparent 35%),
+        linear-gradient(135deg, rgba(255,255,255,0.35), rgba(255,255,255,0)),
+        var(--bg);
       color: var(--text);
+      transition: background 0.3s ease, color 0.3s ease;
     }
 
-    .container {
-      max-width: 1200px;
+    .hidden { display: none !important; }
+
+    .app-shell {
+      max-width: 1400px;
       margin: 0 auto;
-      padding: 16px;
+      padding: 22px;
     }
 
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-    }
-
-    .title-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .device-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 18px;
-      background: white;
+    .glass {
+      background: var(--surface);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--line);
       box-shadow: var(--shadow);
-      display: grid;
-      place-items: center;
-      font-size: 28px;
+      border-radius: var(--card-radius);
     }
-
-    .title h1 {
+    .login-screen {
+    .title-block h1 {
       margin: 0;
-      font-size: clamp(22px, 4vw, 34px);
+      font-size: clamp(24px, 4vw, 34px);
       line-height: 1.1;
     }
 
-    .title p {
-      margin: 4px 0 0;
+    .brand p,
+    .title-block p,
+    .muted,
+    .subtle,
+    .metric-sub,
+    .section-sub {
+      margin: 6px 0 0;
       color: var(--muted);
+    }
+
+    .field {
+      margin-top: 16px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
       font-size: 14px;
     }
 
-    .status-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--muted);
-      font-size: 14px;
-      flex-wrap: wrap;
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: var(--success);
-      display: inline-block;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 16px;
-    }
-
-    .card {
-      grid-column: span 4;
-      background: var(--card);
-      border-radius: 22px;
-      padding: 18px;
-      box-shadow: var(--shadow);
-      min-height: 160px;
-    }
-
-    .wide {
-      grid-column: span 6;
-      min-height: 140px;
-    }
-
-    .btn-pump {
-      border: 0;
+    .field input,
+    .theme-select,
+    .search-box {
       width: 100%;
-      border-radius: 18px;
-      padding: 18px;
-      font-size: 24px;
-      font-weight: 800;
-      color: white;
-      cursor: pointer;
-      background: #94a3b8;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.85);
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
     }
 
-    .btn-pump.on {
-      background: var(--teal);
+    .field input:focus,
+    .theme-select:focus,
+    .search-box:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(79,140,255,0.12);
+    }
+      .btn {
     }
 
-    .switch-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-top: 20px;
-    }
+    .soil-badge { background: linear-gradient(135deg, #ff7a45, #ff9b71); }
+    .water-badge { background: linear-gradient(135deg, #06b6d4, #67e8f9); }
+    .temp-badge { background: linear-gradient(135deg, #84cc16, #bef264); color: #243100; }
 
-    .switch {
-      position: relative;
-      width: 74px;
-      height: 40px;
-      display: inline-block;
-    }
-
-    .switch input {
-      display: none;
-    }
-
-    .slider {
-      position: absolute;
-      inset: 0;
-      background: #9ca3af;
-      border-radius: 999px;
-      cursor: pointer;
-      transition: 0.25s ease;
-    }
-
-    .slider::before {
-      content: "";
-      position: absolute;
-      width: 30px;
-      height: 30px;
-      left: 5px;
-      top: 5px;
-      border-radius: 50%;
-      background: #fff;
-      transition: 0.25s ease;
-    }
-
-    .switch input:checked + .slider {
-      background: var(--teal);
-    }
-
-    .switch input:checked + .slider::before {
-      transform: translateX(34px);
-    }
-
-    .alert-box {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      font-size: clamp(20px, 4vw, 34px);
-      font-weight: 800;
-      min-height: 90px;
-    }
-
-    .meter-wrap {
+    .gauge-wrap {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      margin-top: 6px;
+      margin-top: 8px;
     }
 
     .gauge {
       --value: 0;
-      --accent: var(--teal);
-      --size: min(58vw, 220px);
+      --accent: var(--primary);
+      --size: min(50vw, 220px);
       width: var(--size);
       height: calc(var(--size) / 2 + 10px);
       position: relative;
@@ -206,7 +143,7 @@
       inset: 0;
       border-top-left-radius: calc(var(--size) / 2);
       border-top-right-radius: calc(var(--size) / 2);
-      border: 18px solid var(--grayRing);
+      border: 18px solid #e8edf5;
       border-bottom: 0;
     }
 
@@ -221,7 +158,7 @@
       border-top-color: var(--accent);
       transform-origin: 50% 100%;
       transform: rotate(calc((var(--value) * 1.8deg) - 90deg));
-      transition: transform 0.5s ease;
+      transition: transform 0.45s ease;
     }
 
     .gauge-value {
@@ -229,87 +166,18 @@
       left: 50%;
       bottom: 6px;
       transform: translateX(-50%);
-      font-size: clamp(20px, 4vw, 28px);
-      font-weight: 800;
       text-align: center;
       width: 100%;
+      font-size: clamp(22px, 4vw, 30px);
+      font-weight: 800;
     }
-
-    .gauge-unit {
-      font-size: 18px;
-      color: var(--muted);
-    }
-
-    .range {
-      width: min(58vw, 220px);
-      display: flex;
-      justify-content: space-between;
-      font-size: 16px;
-      margin-top: 6px;
-    }
-
-    .footer-bar {
-      margin-top: 18px;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      color: var(--muted);
-      font-size: 14px;
-      flex-wrap: wrap;
-    }
-
-    .pill {
-      background: #fff;
-      padding: 10px 14px;
-      border-radius: 999px;
-      box-shadow: var(--shadow);
-    }
-
-    .error {
-      color: var(--danger);
-      font-weight: 700;
-      margin-top: 10px;
-    }
-
-    @media (max-width: 980px) {
-      .card, .wide {
-        grid-column: span 6;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .card, .wide {
-        grid-column: span 12;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <div class="title-wrap">
-        <div class="device-icon">🌱</div>
-        <div class="title">
-          <h1 id="deviceName">Smart Garden Dashboard</h1>
-          <p>แดชบอร์ดควบคุมปั๊มน้ำและดูค่าสถานะแบบเรียลไทม์</p>
+      .gauge-unit {
         </div>
-      </div>
-      <div class="status-bar">
-        <span class="dot"></span>
-        <span id="onlineText">กำลังเชื่อมต่อ...</span>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card wide">
-        <h3>Pump</h3>
-        <button id="pumpButton" class="btn-pump">OFF</button>
-      </div>
-
-      <div class="card wide">
-        <h3>Auto Mode</h3>
         <div class="switch-row">
-          <span id="autoModeLabel">ปิดโหมดอัตโนมัติ</span>
+          <div>
+            <div id="autoModeLabel" style="font-weight:800;">ปิดโหมดอัตโนมัติ</div>
+            <div class="subtle">ระบบจะอัปเดตสถานะทันทีเมื่อกด</div>
+          </div>
           <label class="switch">
             <input id="autoModeSwitch" type="checkbox" />
             <span class="slider"></span>
@@ -317,196 +185,114 @@
         </div>
       </div>
 
-      <div class="card wide">
-        <h3>Alert</h3>
-        <div class="alert-box">
-          <div>💧</div>
+      <div class="panel glass">
+        <div class="panel-head">
+          <div>
+            <h3>Alert</h3>
+            <div class="subtle">สถานะล่าสุดจากระบบ</div>
+          </div>
+          <div class="prt-box">
+          <div class="alert-icon">💧</div>
           <div id="alertText">-</div>
         </div>
       </div>
+    </section>
 
-      <div class="card">
-        <h3>Soil</h3>
-        <div class="meter-wrap">
-          <div id="soilGauge" class="gauge" style="--value:0; --accent: var(--orange);">
+    <section class="metrics-grid">
+      <div class="metric-card glass">
+        <div class="metric-header">
+          <div>
+            <h3>Soil</h3>
+            <div class="metric-sub">ค่าความชื้นดิน</div>
+          </div>
+          <span class="badge soil-badge">Sensor</span>
+        </div>
+        <div class="gauge-wrap">
+          <div id="soilGauge" class="gauge" style="--value:0; --accent: var(--soil);">
             <div class="gauge-value"><span id="soilValue">0</span><span class="gauge-unit"> %</span></div>
           </div>
-          <div class="range"><span>0</span><span>4095</span></div>
+          <div class="gauge-range"><span>0</span><span>4095</span></div>
         </div>
       </div>
 
-      <div class="card">
-        <h3>Water</h3>
-        <div class="meter-wrap">
-          <div id="waterGauge" class="gauge" style="--value:0; --accent: var(--teal);">
+      <div class="metric-card glass">
+        <div class="metric-header">
+          <div>
+            <h3>Water</h3>
+            <div class="metric-sub">ระดับน้ำในถัง</div>
+          </div>
+          <span class="badge water-badge">Sensor</span>
+        </div>
+        <div class="gauge-wrap">
+          <div id="waterGauge" class="gauge" style="--value:0; --accent: var(--water);">
             <div class="gauge-value"><span id="waterValue">0</span><span class="gauge-unit"> %</span></div>
           </div>
-          <div class="range"><span>0</span><span>4095</span></div>
+          <div class="gauge-range"><span>0</span><span>4095</span></div>
         </div>
       </div>
-
-      <div class="card">
-        <h3>Temp</h3>
-        <div class="meter-wrap">
-          <div id="tempGauge" class="gauge" style="--value:0; --accent: var(--lime);">
-            <div class="gauge-value"><span id="tempValue">0</span><span class="gauge-unit"> °C</span></div>
-          </div>
-          <div class="range"><span>0</span><span>100</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer-bar">
-      <div class="pill">อัปเดตล่าสุด: <span id="lastUpdated">-</span></div>
-      <div class="pill">รีเฟรชทุก <span id="refreshMs">5000</span> ms</div>
-      <div class="pill">สถานะระบบ: <span id="systemStatus">พร้อมใช้งาน</span></div>
-    </div>
-
-    <div id="errorBox" class="error"></div>
-  </div>
-
-  <script>
-    const state = {
-      refreshMs: 5000,
-      values: {
-        pump: false,
-        autoMode: false,
-        soil: 0,
-        water: 0,
-        temp: 0,
-        alert: "-"
-      },
-      ranges: {
-        soilMin: 0,
-        soilMax: 4095,
-        waterMin: 0,
-        waterMax: 4095,
-        tempMin: 0,
-        tempMax: 100
+        <div class="metric-card glass">
+        el.autoModeSwitch.checked = !el.autoModeSwitch.checked;
       }
-    };
-
-    const el = {
-      deviceName: document.getElementById("deviceName"),
-      onlineText: document.getElementById("onlineText"),
-      pumpButton: document.getElementById("pumpButton"),
-      autoModeSwitch: document.getElementById("autoModeSwitch"),
-      autoModeLabel: document.getElementById("autoModeLabel"),
-      alertText: document.getElementById("alertText"),
-      soilGauge: document.getElementById("soilGauge"),
-      waterGauge: document.getElementById("waterGauge"),
-      tempGauge: document.getElementById("tempGauge"),
-      soilValue: document.getElementById("soilValue"),
-      waterValue: document.getElementById("waterValue"),
-      tempValue: document.getElementById("tempValue"),
-      lastUpdated: document.getElementById("lastUpdated"),
-      refreshMs: document.getElementById("refreshMs"),
-      systemStatus: document.getElementById("systemStatus"),
-      errorBox: document.getElementById("errorBox")
-    };
-
-    function clamp(value, min, max) {
-      return Math.min(Math.max(value, min), max);
     }
 
-    function percentFromRange(value, min, max) {
-      if (max <= min) return 0;
-      return ((value - min) / (max - min)) * 100;
-    }
-
-    function setGauge(gaugeEl, valueEl, rawValue, min, max) {
-      const percent = clamp(percentFromRange(rawValue, min, max), 0, 100);
-      gaugeEl.style.setProperty("--value", percent.toFixed(1));
-      valueEl.textContent = Number(rawValue).toLocaleString();
-    }
-
-    function formatThaiDate(isoString) {
-      if (!isoString) return "-";
-      const d = new Date(isoString);
-      return d.toLocaleString("th-TH");
-    }
-
-    function render() {
-      el.pumpButton.textContent = state.values.pump ? "ON" : "OFF";
-      el.pumpButton.classList.toggle("on", state.values.pump);
-      el.autoModeSwitch.checked = !!state.values.autoMode;
-      el.autoModeLabel.textContent = state.values.autoMode ? "เปิดโหมดอัตโนมัติ" : "ปิดโหมดอัตโนมัติ";
-      el.alertText.textContent = state.values.alert || "-";
-      setGauge(el.soilGauge, el.soilValue, state.values.soil, state.ranges.soilMin, state.ranges.soilMax);
-      setGauge(el.waterGauge, el.waterValue, state.values.water, state.ranges.waterMin, state.ranges.waterMax);
-      setGauge(el.tempGauge, el.tempValue, state.values.temp, state.ranges.tempMin, state.ranges.tempMax);
-    }
-
-    async function fetchConfig() {
-      const res = await fetch("/api/config");
-      const data = await res.json();
-      state.refreshMs = data.config.refreshMs || 5000;
-      state.ranges = data.config.ranges || state.ranges;
-      el.deviceName.textContent = data.config.deviceName || "Smart Garden Dashboard";
-      el.refreshMs.textContent = state.refreshMs;
-    }
-
-    async function fetchStatus() {
-      const res = await fetch("/api/status", { cache: "no-store" });
-      const data = await res.json();
-
-      if (!data.success) {
-        throw new Error(data.error || "โหลดสถานะไม่สำเร็จ");
-      }
-
-      state.values = data.values;
-      el.lastUpdated.textContent = formatThaiDate(data.updatedAt);
-      el.onlineText.textContent = "ออนไลน์";
-      el.systemStatus.textContent = "พร้อมใช้งาน";
-      el.errorBox.textContent = "";
-      render();
-    }
-
-    async function postJson(url, body) {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || "อัปเดตไม่สำเร็จ");
-      return data;
-    }
-
-    async function togglePump() {
+    async function initDashboard() {
       try {
-        await postJson("/api/toggle/pump", { value: !state.values.pump });
-        await fetchStatus();
-      } catch (error) {
-        el.errorBox.textContent = error.message;
-      }
-    }
-
-    async function toggleAutoMode() {
-      try {
-        await postJson("/api/toggle/auto-mode", { value: el.autoModeSwitch.checked });
-        await fetchStatus();
-      } catch (error) {
-        el.errorBox.textContent = error.message;
-      }
-    }
-
-    async function init() {
-      try {
+        el.currentUser.textContent = state.username || "admin";
+        applyTheme(getSavedTheme());
         await fetchConfig();
-        await fetchStatus();
-
-        el.pumpButton.addEventListener("click", togglePump);
-        el.autoModeSwitch.addEventListener("change", toggleAutoMode);
-
-        setInterval(fetchStatus, state.refreshMs);
+        await Promise.all([fetchStatus(), fetchHistory()]);
       } catch (error) {
-        el.errorBox.textContent = error.message;
+        showError(el.errorBox, error.message);
         el.onlineText.textContent = "เชื่อมต่อไม่สำเร็จ";
       }
     }
 
-    init();
+    function bindEvents() {
+      el.loginButton.addEventListener("click", doLogin);
+      el.password.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") doLogin();
+      });
+      el.logoutButton.addEventListener("click", logout);
+      el.themeSelect.addEventListener("change", (e) => applyTheme(e.target.value));
+      el.pumpButton.addEventListener("click", togglePump);
+      el.autoModeSwitch.addEventListener("change", toggleAutoMode);
+      el.historySearch.addEventListener("input", renderHistory);
+      el.refreshHistoryButton.addEventListener("click", fetchHistory);
+    }
+
+    async function boot() {
+      bindEvents();
+      applyTheme(getSavedTheme());
+
+      if (state.token) {
+        setLoggedIn(true);
+        await initDashboard();
+      } else {
+        setLoggedIn(false);
+      }
+
+      setInterval(async () => {
+        if (!state.token) return;
+        try {
+          await fetchStatus();
+        } catch (error) {
+          el.onlineText.textContent = "ออฟไลน์";
+          el.systemStatus.textContent = "ตรวจสอบการเชื่อมต่อ";
+          showError(el.errorBox, error.message);
+        }
+      }, state.refreshMs);
+
+      setInterval(async () => {
+        if (!state.token) return;
+        try {
+          await fetchHistory();
+        } catch (error) {
+          showError(el.errorBox, error.message);
+        }
+      }, 60000);
+    }
+
+    boot();
   </script>
 </body>
 </html>
