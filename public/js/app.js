@@ -53,21 +53,60 @@ function renderTopUser(elId = "currentUser") {
   if (el) el.textContent = user?.username || "-";
 }
 
-function logout() {
-  if (!confirm("ต้องการออกจากระบบใช่หรือไม่")) return;
-  clearStoredUser();
-  window.location.href = "/login.html";
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-async function loadConfig(titleId = "deviceName") {
-  const data = await fetchJson("/api/config");
-  const el = document.getElementById(titleId);
-  if (el) el.textContent = data.config.deviceName || "ระบบควบคุมรดน้ำอัจฉริยะ";
-  return data.config;
+function validatePassword(password) {
+  return typeof password === "string" && password.length >= 8;
+}
+
+function clearFieldError(inputId) {
+  const input = document.getElementById(inputId);
+  const error = document.getElementById(`${inputId}Error`);
+  if (input) input.classList.remove("input-error");
+  if (error) error.textContent = "";
+}
+
+function clearFieldErrors(ids) {
+  ids.forEach(clearFieldError);
+}
+
+function setFieldError(inputId, message) {
+  const input = document.getElementById(inputId);
+  const error = document.getElementById(`${inputId}Error`);
+  if (input) input.classList.add("input-error");
+  if (error) error.textContent = message || "";
+}
+
+function setupPasswordToggle(buttonId, inputId) {
+  const button = document.getElementById(buttonId);
+  const input = document.getElementById(inputId);
+  if (!button || !input) return;
+
+  button.addEventListener("click", () => {
+    const isPassword = input.type === "password";
+    input.type = isPassword ? "text" : "password";
+    button.textContent = isPassword ? "ซ่อน" : "แสดง";
+  });
+}
+
+function setButtonLoading(button, isLoading, loadingText, normalText) {
+  if (!button) return;
+
+  if (isLoading) {
+    button.disabled = true;
+    button.dataset.originalText = normalText || button.textContent;
+    button.textContent = loadingText;
+  } else {
+    button.disabled = false;
+    button.textContent = normalText || button.dataset.originalText || button.textContent;
+  }
 }
 
 function showToast(message, type = "info") {
   let container = document.getElementById("toastContainer");
+
   if (!container) {
     container = document.createElement("div");
     container.id = "toastContainer";
@@ -86,74 +125,69 @@ function showToast(message, type = "info") {
   }, 2200);
 }
 
-function validateEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
+function showConfirm(message, title = "ยืนยันการทำรายการ") {
+  return new Promise((resolve) => {
+    let overlay = document.getElementById("confirmOverlay");
 
-function validatePassword(password) {
-  return typeof password === "string" && password.length >= 8;
-}
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "confirmOverlay";
+      overlay.className = "confirm-overlay";
+      overlay.innerHTML = `
+        <div class="confirm-modal">
+          <div class="confirm-title" id="confirmTitle"></div>
+          <div class="confirm-message" id="confirmMessage"></div>
+          <div class="confirm-actions">
+            <button id="confirmCancel" class="btn btn-light" type="button">ยกเลิก</button>
+            <button id="confirmOk" class="btn btn-primary" type="button">ยืนยัน</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }
 
-function setFieldError(inputId, message) {
-  const input = document.getElementById(inputId);
-  const error = document.getElementById(`${inputId}Error`);
-  if (input) input.classList.add("input-error");
-  if (error) error.textContent = message || "";
-}
+    overlay.querySelector("#confirmTitle").textContent = title;
+    overlay.querySelector("#confirmMessage").textContent = message;
+    overlay.classList.add("show");
 
-function clearFieldError(inputId) {
-  const input = document.getElementById(inputId);
-  const error = document.getElementById(`${inputId}Error`);
-  if (input) input.classList.remove("input-error");
-  if (error) error.textContent = "";
-}
+    const okButton = overlay.querySelector("#confirmOk");
+    const cancelButton = overlay.querySelector("#confirmCancel");
 
-function clearFieldErrors(ids) {
-  ids.forEach(clearFieldError);
-}
+    function cleanup(result) {
+      overlay.classList.remove("show");
+      okButton.onclick = null;
+      cancelButton.onclick = null;
+      overlay.onclick = null;
+      resolve(result);
+    }
 
-function setupPasswordToggle(buttonId, inputId) {
-  const button = document.getElementById(buttonId);
-  const input = document.getElementById(inputId);
-  if (!button || !input) return;
-
-  button.addEventListener("click", () => {
-    const isPassword = input.type === "password";
-    input.type = isPassword ? "text" : "password";
-    button.textContent = isPassword ? "ซ่อน" : "แสดง";
+    okButton.onclick = () => cleanup(true);
+    cancelButton.onclick = () => cleanup(false);
+    overlay.onclick = (e) => {
+      if (e.target === overlay) cleanup(false);
+    };
   });
 }
 
-function setButtonLoading(button, isLoading, loadingText, normalText) {
-  if (!button) return;
-  if (isLoading) {
-    button.disabled = true;
-    button.dataset.originalText = normalText || button.textContent;
-    button.textContent = loadingText;
-  } else {
-    button.disabled = false;
-    button.textContent = normalText || button.dataset.originalText || button.textContent;
-  }
+function logout() {
+  showConfirm("ต้องการออกจากระบบใช่หรือไม่", "ออกจากระบบ").then((ok) => {
+    if (!ok) return;
+    clearStoredUser();
+    window.location.href = "/login.html";
+  });
 }
 
-function sensorTone(type, value) {
-  if (type === "soil") {
-    if (value <= 300) return "danger";
-    if (value <= 1200) return "warning";
-    return "success";
-  }
+async function loadConfig(titleId = "deviceName") {
+  const data = await fetchJson("/api/config");
+  const el = document.getElementById(titleId);
+  if (el) el.textContent = data.config.deviceName || "ระบบควบคุมรดน้ำอัจฉริยะ";
+  return data.config;
+}
 
-  if (type === "water") {
-    if (value <= 300) return "danger";
-    if (value <= 1200) return "warning";
-    return "success";
-  }
-
-  if (type === "temp") {
-    if (value > 38) return "danger";
-    if (value > 32) return "warning";
-    return "success";
-  }
-
-  return "neutral";
+function toneClassFromText(text) {
+  const value = String(text || "").toLowerCase();
+  if (value.includes("ต่ำ") || value.includes("สูงมาก") || value.includes("ใกล้หมด")) return "tone-danger";
+  if (value.includes("ค่อนข้าง") || value.includes("สูงกว่าปกติ") || value.includes("เหลือน้อย")) return "tone-warning";
+  if (value.includes("ปกติ") || value.includes("ดี") || value.includes("ชื้น")) return "tone-success";
+  return "tone-neutral";
 }
