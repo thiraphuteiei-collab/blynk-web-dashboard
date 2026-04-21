@@ -56,8 +56,9 @@ function ensureJsonFile(filePath, defaultValue) {
 function loadHistory() {
   try {
     ensureJsonFile(HISTORY_FILE, []);
-    historyCache = JSON.parse(fs.readFileSync(HISTORY_FILE, "utf8"));
-    if (!Array.isArray(historyCache)) historyCache = [];
+    const raw = fs.readFileSync(HISTORY_FILE, "utf8");
+    const data = JSON.parse(raw);
+    historyCache = Array.isArray(data) ? data : [];
   } catch {
     historyCache = [];
   }
@@ -78,8 +79,9 @@ function addHistory(entry) {
 function loadUsers() {
   try {
     ensureJsonFile(USERS_FILE, []);
-    usersCache = JSON.parse(fs.readFileSync(USERS_FILE, "utf8"));
-    if (!Array.isArray(usersCache)) usersCache = [];
+    const raw = fs.readFileSync(USERS_FILE, "utf8");
+    const data = JSON.parse(raw);
+    usersCache = Array.isArray(data) ? data : [];
   } catch {
     usersCache = [];
   }
@@ -221,20 +223,12 @@ app.post("/api/login", (req, res) => {
   }
 
   upsertUserLogin(username);
-
   const user = usersCache.find((u) => u.username === username);
 
   return res.json({
     success: true,
     token: "logged-in",
     user
-  });
-});
-
-app.get("/api/users", (req, res) => {
-  res.json({
-    success: true,
-    users: usersCache
   });
 });
 
