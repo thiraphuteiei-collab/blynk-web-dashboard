@@ -35,7 +35,7 @@ function formatDateTime(value) {
 async function fetchJson(url, options = {}) {
   const res = await fetch(url, options);
   const data = await res.json();
-  if (!data.success) throw new Error(data.error || "Something went wrong");
+  if (!data.success) throw new Error(data.error || "เกิดข้อผิดพลาด");
   return data;
 }
 
@@ -61,6 +61,6 @@ function logout() {
 async function loadConfig(titleId = "deviceName") {
   const data = await fetchJson("/api/config");
   const el = document.getElementById(titleId);
-  if (el) el.textContent = data.config.deviceName || "Smart Watering Control";
+  if (el) el.textContent = data.config.deviceName || "ระบบควบคุมรดน้ำอัจฉริยะ";
   return data.config;
 }
