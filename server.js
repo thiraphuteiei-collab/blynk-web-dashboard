@@ -137,6 +137,31 @@ function computeAlertLabel(rawValue) {
   return rawValue || "-";
 }
 
+function sensorText(type, value) {
+  if (type === "soil") {
+    if (value <= 300) return "ดินแห้งมาก";
+    if (value <= 1200) return "ดินค่อนข้างแห้ง";
+    if (value <= 2500) return "ดินชื้นปานกลาง";
+    return "ดินชื้นมาก";
+  }
+
+  if (type === "water") {
+    if (value <= 300) return "น้ำในถังต่ำ";
+    if (value <= 1200) return "น้ำเหลือน้อย";
+    if (value <= 2500) return "น้ำอยู่ในระดับปานกลาง";
+    return "น้ำอยู่ในระดับดี";
+  }
+
+  if (type === "temp") {
+    if (value < 20) return "อุณหภูมิค่อนข้างต่ำ";
+    if (value <= 32) return "อุณหภูมิปกติ";
+    if (value <= 38) return "อุณหภูมิสูงกว่าปกติ";
+    return "อุณหภูมิสูงมาก";
+  }
+
+  return "-";
+}
+
 async function fetchSnapshot() {
   if (!BLYNK_TOKEN) throw new Error("ยังไม่ได้ตั้งค่า BLYNK_AUTH_TOKEN");
 
@@ -151,23 +176,37 @@ async function fetchSnapshot() {
     getValue(alert)
   ]);
 
+  const soilValue = parseNumber(soilRaw);
+  const waterValue = parseNumber(waterRaw);
+  const tempValue = parseNumber(tempRaw);
+
   return {
     updatedAt: new Date().toISOString(),
+    source: {
+      platform: "Blynk",
+      status: "ปกติ"
+    },
     values: {
       pump: parseBooleanLike(pumpRaw),
-      soil: parseNumber(soilRaw),
-      water: parseNumber(waterRaw),
-      temp: parseNumber(tempRaw),
+      soil: soilValue,
+      water: waterValue,
+      temp: tempValue,
       autoMode: parseBooleanLike(autoModeRaw),
-      alert: computeAlertLabel(alertRaw)
+      alert: computeAlertLabel(alertRaw),
+      descriptions: {
+        soil: sensorText("soil", soilValue),
+        water: sensorText("water", waterValue),
+        temp: sensorText("temp", tempValue)
+      }
     }
   };
 }
 
-function addHistory(message, extra = {}) {
+function addHistory(type, message, extra = {}) {
   const items = readJson(HISTORY_FILE, []);
   items.unshift({
     id: `log_${Date.now()}`,
+    type,
     time: new Date().toISOString(),
     message,
     ...extra
@@ -178,7 +217,7 @@ function addHistory(message, extra = {}) {
 async function collectHistorySnapshot() {
   try {
     const snap = await fetchSnapshot();
-    addHistory("อัปเดตสถานะระบบ", { values: snap.values });
+    addHistory("SYSTEM", "อัปเดตสถานะระบบ", { values: snap.values });
   } catch {}
 }
 
@@ -207,6 +246,14 @@ function removeResetToken(token) {
   );
 }
 
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validatePassword(password) {
+  return typeof password === "string" && password.length >= 8;
+}
+
 app.get("/", (req, res) => res.redirect("/login.html"));
 
 app.get("/api/config", (req, res) => {
@@ -228,8 +275,12 @@ app.post("/api/register", (req, res) => {
     return res.status(400).json({ success: false, error: "กรอกข้อมูลให้ครบ" });
   }
 
-  if (!email.includes("@")) {
-    return res.status(400).json({ success: false, error: "อีเมลไม่ถูกต้อง" });
+  if (!validateEmail(email)) {
+    return res.status(400).json({ success: false, error: "รูปแบบอีเมลไม่ถูกต้อง" });
+  }
+
+  if (!validatePassword(password)) {
+    return res.status(400).json({ success: false, error: "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร" });
   }
 
   const users = readJson(USERS_FILE, []);
@@ -255,6 +306,7 @@ app.post("/api/register", (req, res) => {
 
   users.push(newUser);
   writeJson(USERS_FILE, users);
+  addHistory("USER", "สมัครสมาชิกใหม่", { email, username });
 
   return res.json({ success: true, message: "สมัครสมาชิกสำเร็จ" });
 });
@@ -273,6 +325,8 @@ app.post("/api/login", (req, res) => {
   user.loginCount = Number(user.loginCount || 0) + 1;
   updateUser(user);
 
+  addHistory("USER", "เข้าสู่ระบบ", { email: user.email, username: user.username });
+
   return res.json({
     success: true,
     token: `token_${user.id}`,
@@ -285,14 +339,17 @@ app.post("/api/forgot-password", (req, res) => {
   const user = findUserByEmail(email);
 
   if (!user) {
-    return res.status(404).json({ success: false, error: "ไม่พบอีเมลนี้ในระบบ" });
+    return res.json({
+      success: true,
+      message: "หากอีเมลนี้มีอยู่ในระบบ เราได้สร้างลิงก์รีเซ็ตรหัสผ่านไว้แล้ว"
+    });
   }
 
   const token = createResetToken(user.id);
 
   return res.json({
     success: true,
-    message: "สร้างลิงก์รีเซ็ตรหัสผ่านแล้ว",
+    message: "หากอีเมลนี้มีอยู่ในระบบ เราได้สร้างลิงก์รีเซ็ตรหัสผ่านไว้แล้ว",
     resetUrl: `/reset-password.html?token=${token}`
   });
 });
@@ -321,6 +378,10 @@ app.post("/api/reset-password/:token", (req, res) => {
     return res.status(400).json({ success: false, error: "กรอกข้อมูลให้ครบ" });
   }
 
+  if (!validatePassword(newPassword)) {
+    return res.status(400).json({ success: false, error: "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร" });
+  }
+
   if (newPassword !== confirmPassword) {
     return res.status(400).json({ success: false, error: "รหัสผ่านไม่ตรงกัน" });
   }
@@ -334,6 +395,7 @@ app.post("/api/reset-password/:token", (req, res) => {
   user.password = newPassword;
   updateUser(user);
   removeResetToken(record.token);
+  addHistory("USER", "รีเซ็ตรหัสผ่าน", { email: user.email, username: user.username });
 
   return res.json({ success: true, message: "รีเซ็ตรหัสผ่านสำเร็จ" });
 });
@@ -353,13 +415,31 @@ app.put("/api/profile/:id", (req, res) => {
   }
 
   const username = String(req.body?.username || "").trim();
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const currentPassword = String(req.body?.currentPassword || "").trim();
 
-  if (!username) {
-    return res.status(400).json({ success: false, error: "กรุณากรอกชื่อผู้ใช้" });
+  if (!username || !email || !currentPassword) {
+    return res.status(400).json({ success: false, error: "กรอกข้อมูลให้ครบ" });
+  }
+
+  if (user.password !== currentPassword) {
+    return res.status(400).json({ success: false, error: "รหัสผ่านปัจจุบันไม่ถูกต้อง" });
+  }
+
+  if (!validateEmail(email)) {
+    return res.status(400).json({ success: false, error: "รูปแบบอีเมลไม่ถูกต้อง" });
+  }
+
+  const users = readJson(USERS_FILE, []);
+  const emailConflict = users.some((u) => u.id !== user.id && u.email === email);
+  if (emailConflict) {
+    return res.status(400).json({ success: false, error: "อีเมลนี้ถูกใช้แล้ว" });
   }
 
   user.username = username;
+  user.email = email;
   updateUser(user);
+  addHistory("USER", "แก้ไขข้อมูลบัญชี", { email: user.email, username: user.username });
 
   res.json({ success: true, user: sanitizeUser(user) });
 });
@@ -377,12 +457,13 @@ app.put("/api/profile/:id/password", (req, res) => {
     return res.status(400).json({ success: false, error: "รหัสผ่านปัจจุบันไม่ถูกต้อง" });
   }
 
-  if (!newPassword) {
-    return res.status(400).json({ success: false, error: "กรุณากรอกรหัสผ่านใหม่" });
+  if (!validatePassword(newPassword)) {
+    return res.status(400).json({ success: false, error: "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร" });
   }
 
   user.password = newPassword;
   updateUser(user);
+  addHistory("USER", "เปลี่ยนรหัสผ่าน", { email: user.email, username: user.username });
 
   res.json({ success: true, message: "เปลี่ยนรหัสผ่านสำเร็จ" });
 });
@@ -405,7 +486,7 @@ app.post("/api/toggle/pump", async (req, res) => {
   try {
     const nextValue = req.body?.value ? 1 : 0;
     await setValue(CONFIG.pins.pump, nextValue);
-    addHistory(nextValue ? "เปิดปั๊มน้ำ" : "ปิดปั๊มน้ำ");
+    addHistory("PUMP", nextValue ? "เปิดปั๊มน้ำ" : "ปิดปั๊มน้ำ");
     res.json({ success: true, value: nextValue });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message || "อัปเดตปั๊มน้ำไม่สำเร็จ" });
@@ -416,7 +497,7 @@ app.post("/api/toggle/auto-mode", async (req, res) => {
   try {
     const nextValue = req.body?.value ? 1 : 0;
     await setValue(CONFIG.pins.autoMode, nextValue);
-    addHistory(nextValue ? "เปิดโหมดอัตโนมัติ" : "ปิดโหมดอัตโนมัติ");
+    addHistory("AUTO", nextValue ? "เปิดโหมดอัตโนมัติ" : "ปิดโหมดอัตโนมัติ");
     res.json({ success: true, value: nextValue });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message || "อัปเดตโหมดอัตโนมัติไม่สำเร็จ" });
