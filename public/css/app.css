@@ -14,7 +14,6 @@
   --water:#06b6d4;
   --temp:#84cc16;
   --shadow:0 16px 36px rgba(15,23,42,0.08);
-  --shadow-soft:0 8px 20px rgba(15,23,42,0.05);
   --radius:22px;
 }
 
@@ -40,7 +39,6 @@ a{
 
 a:hover{color:var(--primary-dark)}
 button,input,select,textarea{font:inherit}
-.hidden{display:none!important}
 
 .page-center{
   min-height:100vh;
@@ -109,13 +107,8 @@ button,input,select,textarea{font:inherit}
   box-shadow:0 0 0 4px rgba(239,68,68,0.1)!important;
 }
 
-.password-wrap{
-  position:relative;
-}
-
-.password-wrap .form-input{
-  padding-right:52px;
-}
+.password-wrap{position:relative}
+.password-wrap .form-input{padding-right:52px}
 
 .password-toggle{
   position:absolute;
@@ -192,6 +185,7 @@ button,input,select,textarea{font:inherit}
 
 .btn:hover{transform:translateY(-1px)}
 .btn:active{transform:translateY(0)}
+
 .btn:disabled{
   opacity:.65;
   cursor:not-allowed;
