@@ -32,14 +32,14 @@
 
     .hidden { display: none !important; }
 
-    .login-page {
+    .auth-page {
       min-height: 100vh;
       display: grid;
       place-items: center;
       padding: 20px;
     }
 
-    .login-card,
+    .auth-card,
     .card {
       background: var(--card);
       border: 1px solid var(--line);
@@ -47,20 +47,42 @@
       box-shadow: var(--shadow);
     }
 
-    .login-card {
+    .auth-card {
       width: 100%;
-      max-width: 420px;
+      max-width: 460px;
       padding: 28px;
     }
 
-    .login-card h1 {
+    .auth-head h1 {
       margin: 0 0 8px;
       font-size: 28px;
     }
 
-    .login-card p {
+    .auth-head p {
       margin: 0 0 20px;
       color: var(--muted);
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .tab-btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
     }
 
     .field {
@@ -115,6 +137,13 @@
     .error {
       margin-top: 12px;
       color: var(--danger);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .success {
+      margin-top: 12px;
+      color: var(--success);
       font-size: 14px;
       font-weight: 600;
     }
@@ -315,23 +344,58 @@
   </style>
 </head>
 <body>
-  <section id="loginPage" class="login-page">
-    <div class="login-card">
-      <h1>Login</h1>
-      <p>เข้าสู่ระบบเพื่อใช้งานแดชบอร์ด</p>
-
-      <div class="field">
-        <label for="username">Username</label>
-        <input id="username" type="text" autocomplete="username" />
+  <section id="authPage" class="auth-page">
+    <div class="auth-card">
+      <div class="auth-head">
+        <h1>Smart Garden</h1>
+        <p>เข้าสู่ระบบหรือสมัครสมาชิก</p>
       </div>
 
-      <div class="field">
-        <label for="password">Password</label>
-        <input id="password" type="password" autocomplete="current-password" />
+      <div class="tabs">
+        <button id="showLoginTab" class="tab-btn active" type="button">Login</button>
+        <button id="showRegisterTab" class="tab-btn" type="button">Register</button>
       </div>
 
-      <button id="loginButton" class="btn btn-primary">เข้าสู่ระบบ</button>
-      <div id="loginError" class="error"></div>
+      <div id="loginForm">
+        <div class="field">
+          <label for="loginUsername">Username</label>
+          <input id="loginUsername" type="text" autocomplete="username" />
+        </div>
+
+        <div class="field">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" />
+        </div>
+
+        <button id="loginButton" class="btn btn-primary">เข้าสู่ระบบ</button>
+        <div id="loginError" class="error"></div>
+      </div>
+
+      <div id="registerForm" class="hidden">
+        <div class="field">
+          <label for="registerFullName">ชื่อ</label>
+          <input id="registerFullName" type="text" />
+        </div>
+
+        <div class="field">
+          <label for="registerEmail">อีเมล</label>
+          <input id="registerEmail" type="email" />
+        </div>
+
+        <div class="field">
+          <label for="registerUsername">Username</label>
+          <input id="registerUsername" type="text" />
+        </div>
+
+        <div class="field">
+          <label for="registerPassword">Password</label>
+          <input id="registerPassword" type="password" />
+        </div>
+
+        <button id="registerButton" class="btn btn-primary">สมัครสมาชิก</button>
+        <div id="registerError" class="error"></div>
+        <div id="registerSuccess" class="success"></div>
+      </div>
     </div>
   </section>
 
@@ -444,12 +508,27 @@
     };
 
     const el = {
-      loginPage: document.getElementById("loginPage"),
+      authPage: document.getElementById("authPage"),
       appPage: document.getElementById("appPage"),
-      username: document.getElementById("username"),
-      password: document.getElementById("password"),
+
+      showLoginTab: document.getElementById("showLoginTab"),
+      showRegisterTab: document.getElementById("showRegisterTab"),
+      loginForm: document.getElementById("loginForm"),
+      registerForm: document.getElementById("registerForm"),
+
+      loginUsername: document.getElementById("loginUsername"),
+      loginPassword: document.getElementById("loginPassword"),
       loginButton: document.getElementById("loginButton"),
       loginError: document.getElementById("loginError"),
+
+      registerFullName: document.getElementById("registerFullName"),
+      registerEmail: document.getElementById("registerEmail"),
+      registerUsername: document.getElementById("registerUsername"),
+      registerPassword: document.getElementById("registerPassword"),
+      registerButton: document.getElementById("registerButton"),
+      registerError: document.getElementById("registerError"),
+      registerSuccess: document.getElementById("registerSuccess"),
+
       logoutButton: document.getElementById("logoutButton"),
       currentUser: document.getElementById("currentUser"),
       deviceName: document.getElementById("deviceName"),
@@ -473,8 +552,22 @@
     }
 
     function setLoggedIn(isLoggedIn) {
-      el.loginPage.classList.toggle("hidden", isLoggedIn);
+      el.authPage.classList.toggle("hidden", isLoggedIn);
       el.appPage.classList.toggle("hidden", !isLoggedIn);
+    }
+
+    function showLogin() {
+      el.showLoginTab.classList.add("active");
+      el.showRegisterTab.classList.remove("active");
+      el.loginForm.classList.remove("hidden");
+      el.registerForm.classList.add("hidden");
+    }
+
+    function showRegister() {
+      el.showRegisterTab.classList.add("active");
+      el.showLoginTab.classList.remove("active");
+      el.registerForm.classList.remove("hidden");
+      el.loginForm.classList.add("hidden");
     }
 
     async function fetchJson(url, options = {}) {
@@ -493,7 +586,9 @@
       }
 
       el.userInfo.innerHTML = `
+        <div class="user-row"><span>ชื่อ</span><strong>${user.fullName || "-"}</strong></div>
         <div class="user-row"><span>Username</span><strong>${user.username || "-"}</strong></div>
+        <div class="user-row"><span>อีเมล</span><strong>${user.email || "-"}</strong></div>
         <div class="user-row"><span>Created</span><strong>${formatDateTime(user.createdAt)}</strong></div>
         <div class="user-row"><span>Last login</span><strong>${formatDateTime(user.lastLoginAt)}</strong></div>
         <div class="user-row"><span>Login count</span><strong>${user.loginCount || 0}</strong></div>
@@ -529,6 +624,34 @@
       }
     }
 
+    async function register() {
+      try {
+        el.registerError.textContent = "";
+        el.registerSuccess.textContent = "";
+
+        await fetchJson("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullName: el.registerFullName.value.trim(),
+            email: el.registerEmail.value.trim(),
+            username: el.registerUsername.value.trim(),
+            password: el.registerPassword.value.trim()
+          })
+        });
+
+        el.registerSuccess.textContent = "สมัครสมาชิกสำเร็จ";
+        el.registerFullName.value = "";
+        el.registerEmail.value = "";
+        el.registerUsername.value = "";
+        el.registerPassword.value = "";
+
+        showLogin();
+      } catch (error) {
+        el.registerError.textContent = error.message;
+      }
+    }
+
     async function login() {
       try {
         el.loginError.textContent = "";
@@ -537,8 +660,8 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            username: el.username.value.trim(),
-            password: el.password.value.trim()
+            username: el.loginUsername.value.trim(),
+            password: el.loginPassword.value.trim()
           })
         });
 
@@ -564,6 +687,7 @@
       localStorage.removeItem("app_login_token");
       localStorage.removeItem("app_login_user");
       setLoggedIn(false);
+      showLogin();
     }
 
     async function fetchConfig() {
@@ -609,10 +733,19 @@
     }
 
     function bindEvents() {
+      el.showLoginTab.addEventListener("click", showLogin);
+      el.showRegisterTab.addEventListener("click", showRegister);
+
       el.loginButton.addEventListener("click", login);
-      el.password.addEventListener("keydown", (e) => {
+      el.loginPassword.addEventListener("keydown", (e) => {
         if (e.key === "Enter") login();
       });
+
+      el.registerButton.addEventListener("click", register);
+      el.registerPassword.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") register();
+      });
+
       el.logoutButton.addEventListener("click", logout);
       el.pumpButton.addEventListener("click", togglePump);
       el.autoModeSwitch.addEventListener("change", toggleAutoMode);
@@ -629,6 +762,7 @@
         await initApp();
       } else {
         setLoggedIn(false);
+        showLogin();
       }
 
       setInterval(async () => {
