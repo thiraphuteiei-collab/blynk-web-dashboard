@@ -15,21 +15,32 @@
       <div class="form-group">
         <label class="form-label" for="email">อีเมล</label>
         <input class="form-input" id="email" type="email" />
+        <div id="emailError" class="field-error"></div>
       </div>
 
       <div class="form-group">
         <label class="form-label" for="username">ชื่อผู้ใช้</label>
         <input class="form-input" id="username" type="text" />
+        <div id="usernameError" class="field-error"></div>
       </div>
 
       <div class="form-group">
         <label class="form-label" for="password">รหัสผ่าน</label>
-        <input class="form-input" id="password" type="password" />
+        <div class="password-wrap">
+          <input class="form-input" id="password" type="password" />
+          <button id="toggleRegisterPassword" class="password-toggle" type="button">แสดง</button>
+        </div>
+        <div class="field-hint">อย่างน้อย 8 ตัวอักษร</div>
+        <div id="passwordError" class="field-error"></div>
       </div>
 
       <div class="form-group">
         <label class="form-label" for="confirmPassword">ยืนยันรหัสผ่าน</label>
-        <input class="form-input" id="confirmPassword" type="password" />
+        <div class="password-wrap">
+          <input class="form-input" id="confirmPassword" type="password" />
+          <button id="toggleRegisterConfirmPassword" class="password-toggle" type="button">แสดง</button>
+        </div>
+        <div id="confirmPasswordError" class="field-error"></div>
       </div>
 
       <div class="checkbox-row">
@@ -49,6 +60,9 @@
 
   <script src="/js/app.js"></script>
   <script>
+    setupPasswordToggle("toggleRegisterPassword", "password");
+    setupPasswordToggle("toggleRegisterConfirmPassword", "confirmPassword");
+
     document.getElementById("registerButton").addEventListener("click", async () => {
       const email = document.getElementById("email").value.trim();
       const username = document.getElementById("username").value.trim();
@@ -57,18 +71,52 @@
       const acceptTerms = document.getElementById("acceptTerms").checked;
       const errorBox = document.getElementById("errorBox");
       const successBox = document.getElementById("successBox");
+      const button = document.getElementById("registerButton");
+
+      errorBox.textContent = "";
+      successBox.textContent = "";
+      clearFieldErrors(["email", "username", "password", "confirmPassword"]);
+
+      let hasError = false;
+
+      if (!email) {
+        setFieldError("email", "กรุณากรอกอีเมล");
+        hasError = true;
+      } else if (!validateEmail(email)) {
+        setFieldError("email", "รูปแบบอีเมลไม่ถูกต้อง");
+        hasError = true;
+      }
+
+      if (!username) {
+        setFieldError("username", "กรุณากรอกชื่อผู้ใช้");
+        hasError = true;
+      }
+
+      if (!password) {
+        setFieldError("password", "กรุณากรอกรหัสผ่าน");
+        hasError = true;
+      } else if (!validatePassword(password)) {
+        setFieldError("password", "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร");
+        hasError = true;
+      }
+
+      if (!confirmPassword) {
+        setFieldError("confirmPassword", "กรุณายืนยันรหัสผ่าน");
+        hasError = true;
+      } else if (password !== confirmPassword) {
+        setFieldError("confirmPassword", "รหัสผ่านไม่ตรงกัน");
+        hasError = true;
+      }
+
+      if (!acceptTerms) {
+        errorBox.textContent = "กรุณายอมรับเงื่อนไขการใช้งาน";
+        hasError = true;
+      }
+
+      if (hasError) return;
 
       try {
-        errorBox.textContent = "";
-        successBox.textContent = "";
-
-        if (password !== confirmPassword) {
-          throw new Error("รหัสผ่านไม่ตรงกัน");
-        }
-
-        if (!acceptTerms) {
-          throw new Error("กรุณายอมรับเงื่อนไขการใช้งาน");
-        }
+        setButtonLoading(button, true, "กำลังสมัครสมาชิก...", "สมัครสมาชิก");
 
         const data = await fetchJson("/api/register", {
           method: "POST",
@@ -77,11 +125,15 @@
         });
 
         successBox.textContent = data.message;
+        showToast("สมัครสมาชิกสำเร็จ", "success");
+
         setTimeout(() => {
           window.location.href = "/login.html";
-        }, 1000);
+        }, 700);
       } catch (error) {
         errorBox.textContent = error.message;
+      } finally {
+        setButtonLoading(button, false, "", "สมัครสมาชิก");
       }
     });
   </script>
