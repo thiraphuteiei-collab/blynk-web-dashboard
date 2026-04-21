@@ -352,20 +352,31 @@ app.post("/api/login", (req, res) => {
 
 app.post("/api/forgot-password", (req, res) => {
   const email = String(req.body?.email || "").trim().toLowerCase();
+
+  if (!email) {
+    return res.status(400).json({ success: false, error: "กรุณากรอกอีเมล" });
+  }
+
+  if (!validateEmail(email)) {
+    return res.status(400).json({ success: false, error: "รูปแบบอีเมลไม่ถูกต้อง" });
+  }
+
   const user = findUserByEmail(email);
 
   if (!user) {
-    return res.json({
-      success: true,
-      message: "หากอีเมลนี้มีอยู่ในระบบ เราได้สร้างลิงก์รีเซ็ตรหัสผ่านไว้แล้ว"
+    return res.status(404).json({
+      success: false,
+      error: "ไม่พบอีเมลนี้ในระบบ"
     });
   }
 
   const token = createResetToken(user.id);
 
+  addHistory("USER", "ขอรีเซ็ตรหัสผ่าน", { email: user.email, username: user.username });
+
   return res.json({
     success: true,
-    message: "หากอีเมลนี้มีอยู่ในระบบ เราได้สร้างลิงก์รีเซ็ตรหัสผ่านไว้แล้ว",
+    message: "พบอีเมลในระบบแล้ว กำลังไปยังหน้าตั้งรหัสผ่านใหม่",
     resetUrl: `/reset-password.html?token=${token}`
   });
 });
