@@ -123,6 +123,14 @@ function parseNumber(value, fallback = 0) {
   return Number.isFinite(num) ? num : fallback;
 }
 
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validatePassword(password) {
+  return typeof password === "string" && password.length >= 8;
+}
+
 function computeAlertLabel(rawValue) {
   const value = String(rawValue || "").trim().toLowerCase();
 
@@ -179,6 +187,7 @@ async function fetchSnapshot() {
   const soilValue = parseNumber(soilRaw);
   const waterValue = parseNumber(waterRaw);
   const tempValue = parseNumber(tempRaw);
+  const alertValue = computeAlertLabel(alertRaw);
 
   return {
     updatedAt: new Date().toISOString(),
@@ -192,7 +201,7 @@ async function fetchSnapshot() {
       water: waterValue,
       temp: tempValue,
       autoMode: parseBooleanLike(autoModeRaw),
-      alert: computeAlertLabel(alertRaw),
+      alert: alertValue,
       descriptions: {
         soil: sensorText("soil", soilValue),
         water: sensorText("water", waterValue),
@@ -244,14 +253,6 @@ function removeResetToken(token) {
     RESET_TOKENS_FILE,
     tokens.filter((t) => t.token !== token)
   );
-}
-
-function validateEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function validatePassword(password) {
-  return typeof password === "string" && password.length >= 8;
 }
 
 app.get("/", (req, res) => res.redirect("/login.html"));
@@ -432,6 +433,7 @@ app.put("/api/profile/:id", (req, res) => {
 
   const users = readJson(USERS_FILE, []);
   const emailConflict = users.some((u) => u.id !== user.id && u.email === email);
+
   if (emailConflict) {
     return res.status(400).json({ success: false, error: "อีเมลนี้ถูกใช้แล้ว" });
   }
@@ -485,8 +487,23 @@ app.get("/api/history", (req, res) => {
 app.post("/api/toggle/pump", async (req, res) => {
   try {
     const nextValue = req.body?.value ? 1 : 0;
+
+    if (nextValue) {
+      const current = await fetchSnapshot();
+
+      if (current.values.autoMode) {
+        return res.status(400).json({ success: false, error: "ปิดโหมดอัตโนมัติก่อน จึงจะควบคุมปั๊มน้ำเองได้" });
+      }
+
+      if (current.values.alert === "น้ำใกล้หมด") {
+        addHistory("ALERT", "ป้องกันการเปิดปั๊ม เพราะระดับน้ำต่ำ");
+        return res.status(400).json({ success: false, error: "ระดับน้ำต่ำ ไม่สามารถเปิดปั๊มน้ำได้" });
+      }
+    }
+
     await setValue(CONFIG.pins.pump, nextValue);
     addHistory("PUMP", nextValue ? "เปิดปั๊มน้ำ" : "ปิดปั๊มน้ำ");
+
     res.json({ success: true, value: nextValue });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message || "อัปเดตปั๊มน้ำไม่สำเร็จ" });
