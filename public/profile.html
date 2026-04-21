@@ -24,17 +24,28 @@
     <section class="grid-2">
       <div class="card">
         <h3>ข้อมูลบัญชี</h3>
-        <div class="card-sub">แก้ไขชื่อผู้ใช้</div>
+        <div class="card-sub">แก้ไขชื่อผู้ใช้และอีเมล</div>
 
         <div class="settings-box">
           <div class="form-group">
             <label class="form-label" for="username">ชื่อผู้ใช้</label>
             <input class="form-input" id="username" type="text" />
+            <div id="usernameError" class="field-error"></div>
           </div>
 
           <div class="form-group">
             <label class="form-label" for="email">อีเมล</label>
-            <input class="form-input" id="email" type="email" disabled />
+            <input class="form-input" id="email" type="email" />
+            <div id="emailError" class="field-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="currentProfilePassword">รหัสผ่านปัจจุบัน</label>
+            <div class="password-wrap">
+              <input class="form-input" id="currentProfilePassword" type="password" />
+              <button id="toggleProfilePassword" class="password-toggle" type="button">แสดง</button>
+            </div>
+            <div id="currentProfilePasswordError" class="field-error"></div>
           </div>
 
           <button id="saveProfileButton" class="btn btn-primary" type="button">บันทึกข้อมูล</button>
@@ -44,17 +55,26 @@
 
       <div class="card">
         <h3>เปลี่ยนรหัสผ่าน</h3>
-        <div class="card-sub">อัปเดตรหัสผ่านใหม่</div>
+        <div class="card-sub">รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร</div>
 
         <div class="settings-box">
           <div class="form-group">
             <label class="form-label" for="currentPassword">รหัสผ่านปัจจุบัน</label>
-            <input class="form-input" id="currentPassword" type="password" />
+            <div class="password-wrap">
+              <input class="form-input" id="currentPassword" type="password" />
+              <button id="toggleCurrentPassword" class="password-toggle" type="button">แสดง</button>
+            </div>
+            <div id="currentPasswordError" class="field-error"></div>
           </div>
 
           <div class="form-group">
             <label class="form-label" for="newPassword">รหัสผ่านใหม่</label>
-            <input class="form-input" id="newPassword" type="password" />
+            <div class="password-wrap">
+              <input class="form-input" id="newPassword" type="password" />
+              <button id="toggleNewPassword" class="password-toggle" type="button">แสดง</button>
+            </div>
+            <div class="field-hint">อย่างน้อย 8 ตัวอักษร</div>
+            <div id="newPasswordError" class="field-error"></div>
           </div>
 
           <button id="savePasswordButton" class="btn btn-primary" type="button">เปลี่ยนรหัสผ่าน</button>
@@ -69,6 +89,10 @@
     redirectIfNotLoggedIn();
     renderTopUser();
 
+    setupPasswordToggle("toggleProfilePassword", "currentProfilePassword");
+    setupPasswordToggle("toggleCurrentPassword", "currentPassword");
+    setupPasswordToggle("toggleNewPassword", "newPassword");
+
     const user = getStoredUser();
 
     async function loadProfile() {
@@ -81,22 +105,56 @@
 
     document.getElementById("saveProfileButton").addEventListener("click", async () => {
       const username = document.getElementById("username").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const currentPassword = document.getElementById("currentProfilePassword").value.trim();
       const box = document.getElementById("profileMessage");
+      const button = document.getElementById("saveProfileButton");
+
+      box.textContent = "";
+      clearFieldErrors(["username", "email", "currentProfilePassword"]);
+
+      let hasError = false;
+
+      if (!username) {
+        setFieldError("username", "กรุณากรอกชื่อผู้ใช้");
+        hasError = true;
+      }
+
+      if (!email) {
+        setFieldError("email", "กรุณากรอกอีเมล");
+        hasError = true;
+      } else if (!validateEmail(email)) {
+        setFieldError("email", "รูปแบบอีเมลไม่ถูกต้อง");
+        hasError = true;
+      }
+
+      if (!currentPassword) {
+        setFieldError("currentProfilePassword", "กรุณากรอกรหัสผ่านปัจจุบัน");
+        hasError = true;
+      }
+
+      if (hasError) return;
 
       try {
+        setButtonLoading(button, true, "กำลังบันทึก...", "บันทึกข้อมูล");
+
         const data = await fetchJson(`/api/profile/${user.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username })
+          body: JSON.stringify({ username, email, currentPassword })
         });
 
         setStoredUser(data.user);
         renderTopUser();
         box.textContent = "บันทึกข้อมูลสำเร็จ";
         box.className = "message text-success";
+        document.getElementById("currentProfilePassword").value = "";
+        showToast("บันทึกข้อมูลแล้ว", "success");
       } catch (error) {
         box.textContent = error.message;
         box.className = "message text-danger";
+      } finally {
+        setButtonLoading(button, false, "", "บันทึกข้อมูล");
       }
     });
 
@@ -104,8 +162,31 @@
       const currentPassword = document.getElementById("currentPassword").value.trim();
       const newPassword = document.getElementById("newPassword").value.trim();
       const box = document.getElementById("passwordMessage");
+      const button = document.getElementById("savePasswordButton");
+
+      box.textContent = "";
+      clearFieldErrors(["currentPassword", "newPassword"]);
+
+      let hasError = false;
+
+      if (!currentPassword) {
+        setFieldError("currentPassword", "กรุณากรอกรหัสผ่านปัจจุบัน");
+        hasError = true;
+      }
+
+      if (!newPassword) {
+        setFieldError("newPassword", "กรุณากรอกรหัสผ่านใหม่");
+        hasError = true;
+      } else if (!validatePassword(newPassword)) {
+        setFieldError("newPassword", "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร");
+        hasError = true;
+      }
+
+      if (hasError) return;
 
       try {
+        setButtonLoading(button, true, "กำลังบันทึก...", "เปลี่ยนรหัสผ่าน");
+
         const data = await fetchJson(`/api/profile/${user.id}/password`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -116,9 +197,12 @@
         box.className = "message text-success";
         document.getElementById("currentPassword").value = "";
         document.getElementById("newPassword").value = "";
+        showToast("เปลี่ยนรหัสผ่านสำเร็จ", "success");
       } catch (error) {
         box.textContent = error.message;
         box.className = "message text-danger";
+      } finally {
+        setButtonLoading(button, false, "", "เปลี่ยนรหัสผ่าน");
       }
     });
 
