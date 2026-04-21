@@ -3,46 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Register</title>
+  <title>สมัครสมาชิก</title>
   <link rel="stylesheet" href="/css/app.css" />
 </head>
 <body>
   <section class="page-center">
     <div class="auth-card">
-      <h1 class="brand-title">Create Account</h1>
-      <p class="brand-sub">Sign up to start using the system</p>
+      <h1 class="brand-title">สมัครสมาชิก</h1>
+      <p class="brand-sub">สร้างบัญชีเพื่อเริ่มใช้งานระบบ</p>
 
       <div class="form-group">
-        <label class="form-label" for="email">Email</label>
+        <label class="form-label" for="email">อีเมล</label>
         <input class="form-input" id="email" type="email" />
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="username">Username</label>
+        <label class="form-label" for="username">ชื่อผู้ใช้</label>
         <input class="form-input" id="username" type="text" />
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="password">Password</label>
+        <label class="form-label" for="password">รหัสผ่าน</label>
         <input class="form-input" id="password" type="password" />
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="confirmPassword">Confirm Password</label>
+        <label class="form-label" for="confirmPassword">ยืนยันรหัสผ่าน</label>
         <input class="form-input" id="confirmPassword" type="password" />
       </div>
 
       <div class="checkbox-row">
         <input id="acceptTerms" type="checkbox" />
-        <label for="acceptTerms">I agree to the terms and conditions</label>
+        <label for="acceptTerms">ฉันยอมรับเงื่อนไขการใช้งาน</label>
       </div>
 
-      <button id="registerButton" class="btn btn-primary full" type="button">Register</button>
+      <button id="registerButton" class="btn btn-primary full" type="button">สมัครสมาชิก</button>
       <div id="errorBox" class="message text-danger"></div>
       <div id="successBox" class="message text-success"></div>
 
       <div class="links-row">
-        <a href="/login.html">Already have an account? Login</a>
+        <a href="/login.html">มีบัญชีอยู่แล้ว? เข้าสู่ระบบ</a>
       </div>
     </div>
   </section>
@@ -63,11 +63,11 @@
         successBox.textContent = "";
 
         if (password !== confirmPassword) {
-          throw new Error("Passwords do not match");
+          throw new Error("รหัสผ่านไม่ตรงกัน");
         }
 
         if (!acceptTerms) {
-          throw new Error("Please accept the terms");
+          throw new Error("กรุณายอมรับเงื่อนไขการใช้งาน");
         }
 
         const data = await fetchJson("/api/register", {
