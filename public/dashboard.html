@@ -16,7 +16,9 @@
 
       <div class="top-actions">
         <div class="pill">สถานะ: <strong id="onlineText">กำลังตรวจสอบ...</strong></div>
+        <div class="pill">เวลาปัจจุบัน: <strong id="currentTime">-</strong></div>
         <div class="pill">อัปเดตล่าสุด: <strong id="lastUpdated">-</strong></div>
+        <div class="pill">แหล่งข้อมูล: <strong id="sourceText">Blynk</strong></div>
         <div class="pill">ผู้ใช้: <strong id="currentUser">-</strong></div>
         <a class="btn btn-light" href="/profile.html">โปรไฟล์</a>
         <button class="btn btn-danger" type="button" onclick="logout()">ออกจากระบบ</button>
@@ -24,17 +26,25 @@
     </div>
 
     <section class="grid-3">
-      <div class="card">
-        <h3>ปั๊มน้ำ</h3>
-        <div class="card-sub">ควบคุมการทำงานหลัก</div>
+      <div class="card card-with-icon">
+        <div class="card-icon">💧</div>
+        <div>
+          <h3>ปั๊มน้ำ</h3>
+          <div class="card-sub">ควบคุมการทำงานหลัก</div>
+        </div>
         <button id="pumpButton" class="pump-btn" type="button">OFF</button>
+        <div id="pumpStateText" class="status-note">สถานะปัจจุบัน: ปิด</div>
+        <div id="pumpActionText" class="status-subnote">กดเพื่อเปิดปั๊มน้ำ</div>
       </div>
 
-      <div class="card">
-        <h3>โหมดอัตโนมัติ</h3>
-        <div class="card-sub" id="autoModeLabel">ปิดอยู่</div>
+      <div class="card card-with-icon">
+        <div class="card-icon">⚙️</div>
+        <div>
+          <h3>โหมดอัตโนมัติ</h3>
+          <div class="card-sub" id="autoModeLabel">ปิดอยู่</div>
+        </div>
         <div class="row-between">
-          <span></span>
+          <span class="status-subnote" id="autoModeHint">เปิดเพื่อให้ระบบทำงานอัตโนมัติ</span>
           <label class="switch">
             <input id="autoModeSwitch" type="checkbox" />
             <span class="slider"></span>
@@ -42,27 +52,43 @@
         </div>
       </div>
 
-      <div class="card">
-        <h3>การแจ้งเตือน</h3>
-        <div class="card-sub">สถานะล่าสุดของระบบ</div>
+      <div class="card card-with-icon">
+        <div class="card-icon">⚠️</div>
+        <div>
+          <h3>การแจ้งเตือน</h3>
+          <div class="card-sub">สถานะล่าสุดของระบบ</div>
+        </div>
         <div id="alertText" class="metric-value">-</div>
+        <div id="alertHint" class="sensor-note">ยังไม่มีการแจ้งเตือน</div>
       </div>
     </section>
 
     <section class="grid-3">
       <div class="card metric-card">
-        <div class="metric-label">ความชื้นดิน</div>
+        <div class="metric-head">
+          <span class="metric-mini-icon">🌱</span>
+          <span class="metric-label">ความชื้นดิน</span>
+        </div>
         <div id="soilValue" class="metric-value soil">0</div>
+        <div id="soilHint" class="sensor-note">-</div>
       </div>
 
       <div class="card metric-card">
-        <div class="metric-label">ระดับน้ำ</div>
+        <div class="metric-head">
+          <span class="metric-mini-icon">🛢️</span>
+          <span class="metric-label">ระดับน้ำ</span>
+        </div>
         <div id="waterValue" class="metric-value water">0</div>
+        <div id="waterHint" class="sensor-note">-</div>
       </div>
 
       <div class="card metric-card">
-        <div class="metric-label">อุณหภูมิ</div>
+        <div class="metric-head">
+          <span class="metric-mini-icon">🌡️</span>
+          <span class="metric-label">อุณหภูมิ</span>
+        </div>
         <div id="tempValue" class="metric-value temp">0</div>
+        <div id="tempHint" class="sensor-note">-</div>
       </div>
     </section>
 
@@ -81,6 +107,7 @@
             <thead>
               <tr>
                 <th>เวลา</th>
+                <th>ประเภท</th>
                 <th>รายการ</th>
               </tr>
             </thead>
@@ -96,6 +123,7 @@
           <div class="user-row"><span>ปั๊มน้ำ</span><strong id="pumpStatus">OFF</strong></div>
           <div class="user-row"><span>โหมดอัตโนมัติ</span><strong id="autoStatus">OFF</strong></div>
           <div class="user-row"><span>การแจ้งเตือน</span><strong id="alertStatus">-</strong></div>
+          <div class="user-row"><span>การเชื่อมต่อ Blynk</span><strong id="blynkStatus">-</strong></div>
         </div>
       </div>
     </section>
@@ -108,19 +136,29 @@
 
     const el = {
       onlineText: document.getElementById("onlineText"),
+      currentTime: document.getElementById("currentTime"),
       lastUpdated: document.getElementById("lastUpdated"),
+      sourceText: document.getElementById("sourceText"),
       pumpButton: document.getElementById("pumpButton"),
       autoModeSwitch: document.getElementById("autoModeSwitch"),
       autoModeLabel: document.getElementById("autoModeLabel"),
+      autoModeHint: document.getElementById("autoModeHint"),
       alertText: document.getElementById("alertText"),
+      alertHint: document.getElementById("alertHint"),
       soilValue: document.getElementById("soilValue"),
       waterValue: document.getElementById("waterValue"),
       tempValue: document.getElementById("tempValue"),
+      soilHint: document.getElementById("soilHint"),
+      waterHint: document.getElementById("waterHint"),
+      tempHint: document.getElementById("tempHint"),
       historyBody: document.getElementById("historyBody"),
       refreshHistoryButton: document.getElementById("refreshHistoryButton"),
       pumpStatus: document.getElementById("pumpStatus"),
       autoStatus: document.getElementById("autoStatus"),
-      alertStatus: document.getElementById("alertStatus")
+      alertStatus: document.getElementById("alertStatus"),
+      blynkStatus: document.getElementById("blynkStatus"),
+      pumpStateText: document.getElementById("pumpStateText"),
+      pumpActionText: document.getElementById("pumpActionText")
     };
 
     const state = {
@@ -130,29 +168,83 @@
         water: 0,
         temp: 0,
         autoMode: false,
-        alert: "-"
+        alert: "-",
+        descriptions: {
+          soil: "-",
+          water: "-",
+          temp: "-"
+        }
       },
-      refreshMs: 5000
+      refreshMs: 5000,
+      lastPumpChangeTime: null
     };
 
+    function updateClock() {
+      el.currentTime.textContent = new Date().toLocaleTimeString("th-TH");
+    }
+
+    function toneClassFromText(text) {
+      const value = String(text || "").toLowerCase();
+      if (value.includes("ต่ำ") || value.includes("สูงมาก") || value.includes("ใกล้หมด")) return "tone-danger";
+      if (value.includes("ค่อนข้าง") || value.includes("สูงกว่าปกติ") || value.includes("เหลือน้อย")) return "tone-warning";
+      if (value.includes("ปกติ") || value.includes("ดี") || value.includes("ชื้น")) return "tone-success";
+      return "tone-neutral";
+    }
+
+    function badgeClass(type) {
+      const t = String(type || "").toUpperCase();
+      if (t === "PUMP") return "badge badge-pump";
+      if (t === "AUTO") return "badge badge-auto";
+      if (t === "ALERT") return "badge badge-alert";
+      if (t === "USER") return "badge badge-user";
+      return "badge badge-system";
+    }
+
     function renderStatus() {
-      el.pumpButton.textContent = state.values.pump ? "ON" : "OFF";
-      el.pumpButton.classList.toggle("on", state.values.pump);
+      const isPumpOn = state.values.pump;
+      const soilText = state.values.descriptions?.soil || "-";
+      const waterText = state.values.descriptions?.water || "-";
+      const tempText = state.values.descriptions?.temp || "-";
+
+      el.pumpButton.textContent = isPumpOn ? "ON" : "OFF";
+      el.pumpButton.classList.toggle("on", isPumpOn);
+
       el.autoModeSwitch.checked = !!state.values.autoMode;
       el.autoModeLabel.textContent = state.values.autoMode ? "เปิดอยู่" : "ปิดอยู่";
+      el.autoModeHint.textContent = state.values.autoMode ? "ระบบกำลังช่วยควบคุมให้อัตโนมัติ" : "เปิดเพื่อให้ระบบทำงานอัตโนมัติ";
+
       el.alertText.textContent = state.values.alert || "-";
+      el.alertHint.textContent = state.values.alert === "น้ำใกล้หมด" ? "ควรเติมน้ำในถัง" : "ระบบอยู่ในสถานะปกติ";
+
       el.soilValue.textContent = Number(state.values.soil || 0).toLocaleString();
       el.waterValue.textContent = Number(state.values.water || 0).toLocaleString();
       el.tempValue.textContent = Number(state.values.temp || 0).toLocaleString();
-      el.pumpStatus.textContent = state.values.pump ? "ON" : "OFF";
+
+      el.soilHint.textContent = soilText;
+      el.waterHint.textContent = waterText;
+      el.tempHint.textContent = tempText;
+
+      el.soilHint.className = `sensor-note ${toneClassFromText(soilText)}`;
+      el.waterHint.className = `sensor-note ${toneClassFromText(waterText)}`;
+      el.tempHint.className = `sensor-note ${toneClassFromText(tempText)}`;
+      el.alertHint.className = `sensor-note ${toneClassFromText(el.alertHint.textContent)}`;
+
+      el.pumpStatus.textContent = isPumpOn ? "ON" : "OFF";
       el.autoStatus.textContent = state.values.autoMode ? "ON" : "OFF";
       el.alertStatus.textContent = state.values.alert || "-";
+
+      el.pumpStateText.textContent = `สถานะปัจจุบัน: ${isPumpOn ? "เปิดอยู่" : "ปิด"}`;
+      if (isPumpOn && state.lastPumpChangeTime) {
+        el.pumpActionText.textContent = `เริ่มทำงานเมื่อ ${formatDateTime(state.lastPumpChangeTime)}`;
+      } else {
+        el.pumpActionText.textContent = isPumpOn ? "ระบบกำลังจ่ายน้ำ" : "กดเพื่อเปิดปั๊มน้ำ";
+      }
     }
 
     function renderHistory(items) {
       el.historyBody.innerHTML = "";
       if (!items.length) {
-        el.historyBody.innerHTML = `<tr><td colspan="2">ยังไม่มีประวัติการทำงาน</td></tr>`;
+        el.historyBody.innerHTML = `<tr><td colspan="3">ยังไม่มีประวัติการทำงาน</td></tr>`;
         return;
       }
 
@@ -160,6 +252,7 @@
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${formatDateTime(item.time)}</td>
+          <td><span class="${badgeClass(item.type)}">${item.type || "SYSTEM"}</span></td>
           <td>${item.message || "-"}</td>
         `;
         el.historyBody.appendChild(tr);
@@ -171,32 +264,58 @@
       state.values = data.values;
       el.onlineText.textContent = "ออนไลน์";
       el.lastUpdated.textContent = formatDateTime(data.updatedAt);
+      el.sourceText.textContent = `${data.source?.platform || "Blynk"} • ${data.source?.status || "ปกติ"}`;
+      el.blynkStatus.textContent = data.source?.status || "ปกติ";
       renderStatus();
     }
 
     async function loadHistory() {
-      const data = await fetchJson("/api/history");
-      renderHistory(data.items || []);
+      const button = el.refreshHistoryButton;
+
+      try {
+        setButtonLoading(button, true, "กำลังโหลด...", "รีเฟรช");
+        const data = await fetchJson("/api/history");
+        renderHistory(data.items || []);
+      } finally {
+        setButtonLoading(button, false, "", "รีเฟรช");
+      }
     }
 
     document.getElementById("pumpButton").addEventListener("click", async () => {
+      const nextValue = !state.values.pump;
+      const ok = confirm(nextValue ? "คุณต้องการเปิดปั๊มน้ำใช่หรือไม่" : "คุณต้องการปิดปั๊มน้ำใช่หรือไม่");
+      if (!ok) return;
+
       await fetchJson("/api/toggle/pump", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ value: !state.values.pump })
+        body: JSON.stringify({ value: nextValue })
       });
+
+      state.lastPumpChangeTime = new Date().toISOString();
       await loadStatus();
       await loadHistory();
+      showToast(nextValue ? "เปิดปั๊มน้ำแล้ว" : "ปิดปั๊มน้ำแล้ว", "success");
     });
 
     document.getElementById("autoModeSwitch").addEventListener("change", async (e) => {
+      const nextValue = e.target.checked;
+      const ok = confirm(nextValue ? "ต้องการเปิดโหมดอัตโนมัติใช่หรือไม่" : "ต้องการปิดโหมดอัตโนมัติใช่หรือไม่");
+
+      if (!ok) {
+        e.target.checked = !nextValue;
+        return;
+      }
+
       await fetchJson("/api/toggle/auto-mode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ value: e.target.checked })
+        body: JSON.stringify({ value: nextValue })
       });
+
       await loadStatus();
       await loadHistory();
+      showToast(nextValue ? "เปิดโหมดอัตโนมัติแล้ว" : "ปิดโหมดอัตโนมัติแล้ว", "success");
     });
 
     document.getElementById("refreshHistoryButton").addEventListener("click", loadHistory);
@@ -204,6 +323,9 @@
     (async () => {
       const config = await loadConfig();
       state.refreshMs = config.refreshMs || 5000;
+      updateClock();
+      setInterval(updateClock, 1000);
+
       await loadStatus();
       await loadHistory();
 
@@ -212,6 +334,8 @@
           await loadStatus();
         } catch {
           el.onlineText.textContent = "ออฟไลน์";
+          el.sourceText.textContent = "Blynk • ผิดปกติ";
+          el.blynkStatus.textContent = "ผิดปกติ";
         }
       }, state.refreshMs);
     })();
