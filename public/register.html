@@ -118,7 +118,7 @@
       try {
         setButtonLoading(button, true, "กำลังสมัครสมาชิก...", "สมัครสมาชิก");
 
-        const data = await fetchJson("/api/register", {
+        await fetchJson("/api/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, username, password })
