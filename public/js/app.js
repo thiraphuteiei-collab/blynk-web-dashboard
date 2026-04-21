@@ -50,7 +50,7 @@ function redirectIfNotLoggedIn() {
 function renderTopUser(elId = "currentUser") {
   const user = getStoredUser();
   const el = document.getElementById(elId);
-  if (el) el.textContent = user?.fullName || user?.username || "-";
+  if (el) el.textContent = user?.username || "-";
 }
 
 function logout() {
