@@ -1,1 +1,135 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile</title>
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="top-title">
+        <h1>Profile & Settings</h1>
+        <p>Manage your account</p>
+      </div>
 
+      <div class="top-actions">
+        <div class="pill">User: <strong id="currentUser">-</strong></div>
+        <a class="btn btn-light" href="/dashboard.html">Back to Dashboard</a>
+        <button class="btn btn-danger" type="button" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <section class="grid-2">
+      <div class="card">
+        <h3>Profile</h3>
+        <div class="card-sub">Update your information</div>
+
+        <div class="settings-box">
+          <div class="form-group">
+            <label class="form-label" for="fullName">Full name</label>
+            <input class="form-input" id="fullName" type="text" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="username">Username</label>
+            <input class="form-input" id="username" type="text" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email</label>
+            <input class="form-input" id="email" type="email" disabled />
+          </div>
+
+          <button id="saveProfileButton" class="btn btn-primary" type="button">Save Profile</button>
+          <div id="profileMessage" class="message"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Change Password</h3>
+        <div class="card-sub">Update your password</div>
+
+        <div class="settings-box">
+          <div class="form-group">
+            <label class="form-label" for="currentPassword">Current password</label>
+            <input class="form-input" id="currentPassword" type="password" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="newPassword">New password</label>
+            <input class="form-input" id="newPassword" type="password" />
+          </div>
+
+          <button id="savePasswordButton" class="btn btn-primary" type="button">Change Password</button>
+          <div id="passwordMessage" class="message"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    redirectIfNotLoggedIn();
+    renderTopUser();
+
+    const user = getStoredUser();
+
+    async function loadProfile() {
+      const data = await fetchJson(`/api/profile/${user.id}`);
+      const profile = data.user;
+
+      document.getElementById("fullName").value = profile.fullName || "";
+      document.getElementById("username").value = profile.username || "";
+      document.getElementById("email").value = profile.email || "";
+    }
+
+    document.getElementById("saveProfileButton").addEventListener("click", async () => {
+      const fullName = document.getElementById("fullName").value.trim();
+      const username = document.getElementById("username").value.trim();
+      const box = document.getElementById("profileMessage");
+
+      try {
+        const data = await fetchJson(`/api/profile/${user.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fullName, username })
+        });
+
+        setStoredUser(data.user);
+        renderTopUser();
+        box.textContent = "Profile updated";
+        box.className = "message text-success";
+      } catch (error) {
+        box.textContent = error.message;
+        box.className = "message text-danger";
+      }
+    });
+
+    document.getElementById("savePasswordButton").addEventListener("click", async () => {
+      const currentPassword = document.getElementById("currentPassword").value.trim();
+      const newPassword = document.getElementById("newPassword").value.trim();
+      const box = document.getElementById("passwordMessage");
+
+      try {
+        const data = await fetchJson(`/api/profile/${user.id}/password`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ currentPassword, newPassword })
+        });
+
+        box.textContent = data.message;
+        box.className = "message text-success";
+        document.getElementById("currentPassword").value = "";
+        document.getElementById("newPassword").value = "";
+      } catch (error) {
+        box.textContent = error.message;
+        box.className = "message text-danger";
+      }
+    });
+
+    loadProfile();
+  </script>
+</body>
+</html>
