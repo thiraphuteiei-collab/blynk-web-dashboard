@@ -25,6 +25,28 @@ function setStoredToken(token) {
   localStorage.setItem("app_token", token);
 }
 
+function isLoggedIn() {
+  return !!(getStoredUser() && getStoredToken());
+}
+
+function redirectIfNotLoggedIn() {
+  if (!isLoggedIn()) {
+    window.location.href = "/login.html";
+  }
+}
+
+function redirectIfLoggedIn() {
+  if (isLoggedIn()) {
+    window.location.href = "/dashboard.html";
+  }
+}
+
+function renderTopUser(elId = "currentUser") {
+  const user = getStoredUser();
+  const el = document.getElementById(elId);
+  if (el) el.textContent = user?.username || "-";
+}
+
 function formatDateTime(value) {
   if (!value) return "-";
   const d = new Date(value);
@@ -41,20 +63,6 @@ async function fetchJson(url, options = {}) {
   const data = await res.json();
   if (!data.success) throw new Error(data.error || "เกิดข้อผิดพลาด");
   return data;
-}
-
-function redirectIfNotLoggedIn() {
-  const user = getStoredUser();
-  const token = getStoredToken();
-  if (!user || !token) {
-    window.location.href = "/login.html";
-  }
-}
-
-function renderTopUser(elId = "currentUser") {
-  const user = getStoredUser();
-  const el = document.getElementById(elId);
-  if (el) el.textContent = user?.username || "-";
 }
 
 function validateEmail(email) {
