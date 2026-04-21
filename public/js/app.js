@@ -54,6 +54,7 @@ function renderTopUser(elId = "currentUser") {
 }
 
 function logout() {
+  if (!confirm("ต้องการออกจากระบบใช่หรือไม่")) return;
   clearStoredUser();
   window.location.href = "/login.html";
 }
@@ -63,4 +64,96 @@ async function loadConfig(titleId = "deviceName") {
   const el = document.getElementById(titleId);
   if (el) el.textContent = data.config.deviceName || "ระบบควบคุมรดน้ำอัจฉริยะ";
   return data.config;
+}
+
+function showToast(message, type = "info") {
+  let container = document.getElementById("toastContainer");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toastContainer";
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("toast-hide");
+    setTimeout(() => toast.remove(), 250);
+  }, 2200);
+}
+
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validatePassword(password) {
+  return typeof password === "string" && password.length >= 8;
+}
+
+function setFieldError(inputId, message) {
+  const input = document.getElementById(inputId);
+  const error = document.getElementById(`${inputId}Error`);
+  if (input) input.classList.add("input-error");
+  if (error) error.textContent = message || "";
+}
+
+function clearFieldError(inputId) {
+  const input = document.getElementById(inputId);
+  const error = document.getElementById(`${inputId}Error`);
+  if (input) input.classList.remove("input-error");
+  if (error) error.textContent = "";
+}
+
+function clearFieldErrors(ids) {
+  ids.forEach(clearFieldError);
+}
+
+function setupPasswordToggle(buttonId, inputId) {
+  const button = document.getElementById(buttonId);
+  const input = document.getElementById(inputId);
+  if (!button || !input) return;
+
+  button.addEventListener("click", () => {
+    const isPassword = input.type === "password";
+    input.type = isPassword ? "text" : "password";
+    button.textContent = isPassword ? "ซ่อน" : "แสดง";
+  });
+}
+
+function setButtonLoading(button, isLoading, loadingText, normalText) {
+  if (!button) return;
+  if (isLoading) {
+    button.disabled = true;
+    button.dataset.originalText = normalText || button.textContent;
+    button.textContent = loadingText;
+  } else {
+    button.disabled = false;
+    button.textContent = normalText || button.dataset.originalText || button.textContent;
+  }
+}
+
+function sensorTone(type, value) {
+  if (type === "soil") {
+    if (value <= 300) return "danger";
+    if (value <= 1200) return "warning";
+    return "success";
+  }
+
+  if (type === "water") {
+    if (value <= 300) return "danger";
+    if (value <= 1200) return "warning";
+    return "success";
+  }
+
+  if (type === "temp") {
+    if (value > 38) return "danger";
+    if (value > 32) return "warning";
+    return "success";
+  }
+
+  return "neutral";
 }
