@@ -123,7 +123,7 @@ function parseBooleanLike(value) {
 function parseNumberOrNull(value) {
   if (value === null || value === undefined) return null;
   const raw = String(value).trim().toLowerCase();
-  if (!raw || raw === "null" || raw === "nan" || raw === "undefined") return null;
+  if (!raw || raw === "null" || raw === "undefined" || raw === "nan") return null;
   const num = Number(raw);
   return Number.isFinite(num) ? num : null;
 }
