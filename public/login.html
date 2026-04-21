@@ -49,8 +49,8 @@
     document.getElementById("loginButton").addEventListener("click", async () => {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
-      const button = document.getElementById("loginButton");
       const errorBox = document.getElementById("errorBox");
+      const button = document.getElementById("loginButton");
 
       errorBox.textContent = "";
       clearFieldErrors(["email", "password"]);
