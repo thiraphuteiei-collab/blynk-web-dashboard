@@ -367,7 +367,7 @@
           <input id="loginPassword" type="password" autocomplete="current-password" />
         </div>
 
-        <button id="loginButton" class="btn btn-primary">เข้าสู่ระบบ</button>
+        <button id="loginButton" class="btn btn-primary" type="button">เข้าสู่ระบบ</button>
         <div id="loginError" class="error"></div>
       </div>
 
@@ -392,7 +392,7 @@
           <input id="registerPassword" type="password" />
         </div>
 
-        <button id="registerButton" class="btn btn-primary">สมัครสมาชิก</button>
+        <button id="registerButton" class="btn btn-primary" type="button">สมัครสมาชิก</button>
         <div id="registerError" class="error"></div>
         <div id="registerSuccess" class="success"></div>
       </div>
@@ -409,7 +409,7 @@
       <div class="top-right">
         <div class="pill">ผู้ใช้: <strong id="currentUser">-</strong></div>
         <div class="pill">สถานะ: <strong id="onlineText">กำลังเชื่อมต่อ...</strong></div>
-        <button id="logoutButton" class="btn btn-danger">ออกจากระบบ</button>
+        <button id="logoutButton" class="btn btn-danger" type="button">ออกจากระบบ</button>
       </div>
     </div>
 
@@ -417,7 +417,7 @@
       <div class="card">
         <h3>Pump</h3>
         <div class="sub">ควบคุมปั๊มน้ำ</div>
-        <button id="pumpButton" class="pump-btn">OFF</button>
+        <button id="pumpButton" class="pump-btn" type="button">OFF</button>
       </div>
 
       <div class="card">
@@ -463,7 +463,7 @@
             <h3 style="margin-bottom:6px;">History</h3>
             <div class="sub" style="margin:0;">ข้อมูลย้อนหลังของระบบ</div>
           </div>
-          <button id="refreshHistoryButton" class="btn btn-light">รีเฟรช</button>
+          <button id="refreshHistoryButton" class="btn btn-light" type="button">รีเฟรช</button>
         </div>
 
         <div class="table-wrap">
@@ -493,9 +493,27 @@
   </main>
 
   <script>
+    function getStoredUser() {
+      const raw = localStorage.getItem("app_login_user");
+      if (!raw) return null;
+
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return {
+          username: raw,
+          fullName: raw,
+          email: "",
+          createdAt: "",
+          lastLoginAt: "",
+          loginCount: 0
+        };
+      }
+    }
+
     const state = {
       token: localStorage.getItem("app_login_token") || "",
-      user: JSON.parse(localStorage.getItem("app_login_user") || "null"),
+      user: getStoredUser(),
       refreshMs: 5000,
       values: {
         pump: false,
@@ -548,6 +566,7 @@
     function formatDateTime(value) {
       if (!value) return "-";
       const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "-";
       return d.toLocaleString("th-TH");
     }
 
