@@ -24,7 +24,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 const CONFIG = {
-  deviceName: process.env.DEVICE_NAME || "Smart Watering Control",
+  deviceName: process.env.DEVICE_NAME || "ระบบควบคุมรดน้ำอัจฉริยะ",
   refreshMs: Number(process.env.REFRESH_MS || 5000),
   pins: {
     pump: process.env.PIN_PUMP || "v0",
@@ -125,13 +125,20 @@ function parseNumber(value, fallback = 0) {
 
 function computeAlertLabel(rawValue) {
   const value = String(rawValue || "").trim().toLowerCase();
-  if (["0", "low", "empty", "น้ำหมด", "น้ำต่ำ", "near empty", "ใกล้หมด"].includes(value)) return "Water low";
-  if (["1", "normal", "ok", "น้ำปกติ"].includes(value)) return "Normal";
+
+  if (["0", "low", "empty", "near empty", "น้ำหมด", "น้ำต่ำ", "ใกล้หมด"].includes(value)) {
+    return "น้ำใกล้หมด";
+  }
+
+  if (["1", "normal", "ok", "น้ำปกติ"].includes(value)) {
+    return "น้ำปกติ";
+  }
+
   return rawValue || "-";
 }
 
 async function fetchSnapshot() {
-  if (!BLYNK_TOKEN) throw new Error("BLYNK_AUTH_TOKEN is missing");
+  if (!BLYNK_TOKEN) throw new Error("ยังไม่ได้ตั้งค่า BLYNK_AUTH_TOKEN");
 
   const { pump, soil, water, temp, autoMode, alert } = CONFIG.pins;
 
@@ -171,7 +178,7 @@ function addHistory(message, extra = {}) {
 async function collectHistorySnapshot() {
   try {
     const snap = await fetchSnapshot();
-    addHistory("System snapshot updated", { values: snap.values });
+    addHistory("อัปเดตสถานะระบบ", { values: snap.values });
   } catch {}
 }
 
@@ -218,21 +225,21 @@ app.post("/api/register", (req, res) => {
   const password = String(req.body?.password || "").trim();
 
   if (!email || !username || !password) {
-    return res.status(400).json({ success: false, error: "Please fill in all fields" });
+    return res.status(400).json({ success: false, error: "กรอกข้อมูลให้ครบ" });
   }
 
   if (!email.includes("@")) {
-    return res.status(400).json({ success: false, error: "Invalid email" });
+    return res.status(400).json({ success: false, error: "อีเมลไม่ถูกต้อง" });
   }
 
   const users = readJson(USERS_FILE, []);
 
   if (users.some((u) => u.email === email)) {
-    return res.status(400).json({ success: false, error: "Email already exists" });
+    return res.status(400).json({ success: false, error: "อีเมลนี้ถูกใช้แล้ว" });
   }
 
   if (users.some((u) => u.username.toLowerCase() === username.toLowerCase())) {
-    return res.status(400).json({ success: false, error: "Username already exists" });
+    return res.status(400).json({ success: false, error: "ชื่อผู้ใช้นี้ถูกใช้แล้ว" });
   }
 
   const now = new Date().toISOString();
@@ -249,7 +256,7 @@ app.post("/api/register", (req, res) => {
   users.push(newUser);
   writeJson(USERS_FILE, users);
 
-  return res.json({ success: true, message: "Register successful" });
+  return res.json({ success: true, message: "สมัครสมาชิกสำเร็จ" });
 });
 
 app.post("/api/login", (req, res) => {
@@ -259,7 +266,7 @@ app.post("/api/login", (req, res) => {
   const user = findUserByEmail(email);
 
   if (!user || user.password !== password) {
-    return res.status(401).json({ success: false, error: "Email or password is incorrect" });
+    return res.status(401).json({ success: false, error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
   }
 
   user.lastLoginAt = new Date().toISOString();
@@ -278,14 +285,14 @@ app.post("/api/forgot-password", (req, res) => {
   const user = findUserByEmail(email);
 
   if (!user) {
-    return res.status(404).json({ success: false, error: "Email not found" });
+    return res.status(404).json({ success: false, error: "ไม่พบอีเมลนี้ในระบบ" });
   }
 
   const token = createResetToken(user.id);
 
   return res.json({
     success: true,
-    message: "Reset link created",
+    message: "สร้างลิงก์รีเซ็ตรหัสผ่านแล้ว",
     resetUrl: `/reset-password.html?token=${token}`
   });
 });
@@ -294,7 +301,7 @@ app.get("/api/reset-password/:token", (req, res) => {
   const record = getResetTokenRecord(req.params.token);
 
   if (!record) {
-    return res.status(400).json({ success: false, error: "Reset link is invalid or expired" });
+    return res.status(400).json({ success: false, error: "ลิงก์รีเซ็ตรหัสผ่านไม่ถูกต้องหรือหมดอายุแล้ว" });
   }
 
   return res.json({ success: true });
@@ -304,37 +311,37 @@ app.post("/api/reset-password/:token", (req, res) => {
   const record = getResetTokenRecord(req.params.token);
 
   if (!record) {
-    return res.status(400).json({ success: false, error: "Reset link is invalid or expired" });
+    return res.status(400).json({ success: false, error: "ลิงก์รีเซ็ตรหัสผ่านไม่ถูกต้องหรือหมดอายุแล้ว" });
   }
 
   const newPassword = String(req.body?.newPassword || "").trim();
   const confirmPassword = String(req.body?.confirmPassword || "").trim();
 
   if (!newPassword || !confirmPassword) {
-    return res.status(400).json({ success: false, error: "Please fill in all fields" });
+    return res.status(400).json({ success: false, error: "กรอกข้อมูลให้ครบ" });
   }
 
   if (newPassword !== confirmPassword) {
-    return res.status(400).json({ success: false, error: "Passwords do not match" });
+    return res.status(400).json({ success: false, error: "รหัสผ่านไม่ตรงกัน" });
   }
 
   const user = findUserById(record.userId);
 
   if (!user) {
-    return res.status(404).json({ success: false, error: "User not found" });
+    return res.status(404).json({ success: false, error: "ไม่พบผู้ใช้งาน" });
   }
 
   user.password = newPassword;
   updateUser(user);
   removeResetToken(record.token);
 
-  return res.json({ success: true, message: "Password reset successful" });
+  return res.json({ success: true, message: "รีเซ็ตรหัสผ่านสำเร็จ" });
 });
 
 app.get("/api/profile/:id", (req, res) => {
   const user = findUserById(req.params.id);
   if (!user) {
-    return res.status(404).json({ success: false, error: "User not found" });
+    return res.status(404).json({ success: false, error: "ไม่พบผู้ใช้งาน" });
   }
   res.json({ success: true, user: sanitizeUser(user) });
 });
@@ -342,13 +349,13 @@ app.get("/api/profile/:id", (req, res) => {
 app.put("/api/profile/:id", (req, res) => {
   const user = findUserById(req.params.id);
   if (!user) {
-    return res.status(404).json({ success: false, error: "User not found" });
+    return res.status(404).json({ success: false, error: "ไม่พบผู้ใช้งาน" });
   }
 
   const username = String(req.body?.username || "").trim();
 
   if (!username) {
-    return res.status(400).json({ success: false, error: "Username is required" });
+    return res.status(400).json({ success: false, error: "กรุณากรอกชื่อผู้ใช้" });
   }
 
   user.username = username;
@@ -360,24 +367,24 @@ app.put("/api/profile/:id", (req, res) => {
 app.put("/api/profile/:id/password", (req, res) => {
   const user = findUserById(req.params.id);
   if (!user) {
-    return res.status(404).json({ success: false, error: "User not found" });
+    return res.status(404).json({ success: false, error: "ไม่พบผู้ใช้งาน" });
   }
 
   const currentPassword = String(req.body?.currentPassword || "").trim();
   const newPassword = String(req.body?.newPassword || "").trim();
 
   if (user.password !== currentPassword) {
-    return res.status(400).json({ success: false, error: "Current password is incorrect" });
+    return res.status(400).json({ success: false, error: "รหัสผ่านปัจจุบันไม่ถูกต้อง" });
   }
 
   if (!newPassword) {
-    return res.status(400).json({ success: false, error: "New password is required" });
+    return res.status(400).json({ success: false, error: "กรุณากรอกรหัสผ่านใหม่" });
   }
 
   user.password = newPassword;
   updateUser(user);
 
-  res.json({ success: true, message: "Password updated" });
+  res.json({ success: true, message: "เปลี่ยนรหัสผ่านสำเร็จ" });
 });
 
 app.get("/api/status", async (req, res) => {
@@ -385,7 +392,7 @@ app.get("/api/status", async (req, res) => {
     const snap = await fetchSnapshot();
     res.json({ success: true, ...snap });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message || "Failed to fetch status" });
+    res.status(500).json({ success: false, error: error.message || "ดึงข้อมูลสถานะไม่สำเร็จ" });
   }
 });
 
@@ -398,10 +405,10 @@ app.post("/api/toggle/pump", async (req, res) => {
   try {
     const nextValue = req.body?.value ? 1 : 0;
     await setValue(CONFIG.pins.pump, nextValue);
-    addHistory(nextValue ? "Pump turned ON" : "Pump turned OFF");
+    addHistory(nextValue ? "เปิดปั๊มน้ำ" : "ปิดปั๊มน้ำ");
     res.json({ success: true, value: nextValue });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message || "Failed to update pump" });
+    res.status(500).json({ success: false, error: error.message || "อัปเดตปั๊มน้ำไม่สำเร็จ" });
   }
 });
 
@@ -409,10 +416,10 @@ app.post("/api/toggle/auto-mode", async (req, res) => {
   try {
     const nextValue = req.body?.value ? 1 : 0;
     await setValue(CONFIG.pins.autoMode, nextValue);
-    addHistory(nextValue ? "Auto mode enabled" : "Auto mode disabled");
+    addHistory(nextValue ? "เปิดโหมดอัตโนมัติ" : "ปิดโหมดอัตโนมัติ");
     res.json({ success: true, value: nextValue });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message || "Failed to update auto mode" });
+    res.status(500).json({ success: false, error: error.message || "อัปเดตโหมดอัตโนมัติไม่สำเร็จ" });
   }
 });
 
