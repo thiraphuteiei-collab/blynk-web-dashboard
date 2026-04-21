@@ -59,7 +59,6 @@ function sanitizeUser(user) {
   if (!user) return null;
   return {
     id: user.id,
-    fullName: user.fullName,
     email: user.email,
     username: user.username,
     createdAt: user.createdAt,
@@ -214,12 +213,11 @@ app.get("/api/config", (req, res) => {
 });
 
 app.post("/api/register", (req, res) => {
-  const fullName = String(req.body?.fullName || "").trim();
   const email = String(req.body?.email || "").trim().toLowerCase();
   const username = String(req.body?.username || "").trim();
   const password = String(req.body?.password || "").trim();
 
-  if (!fullName || !email || !username || !password) {
+  if (!email || !username || !password) {
     return res.status(400).json({ success: false, error: "Please fill in all fields" });
   }
 
@@ -240,7 +238,6 @@ app.post("/api/register", (req, res) => {
   const now = new Date().toISOString();
   const newUser = {
     id: `user_${Date.now()}`,
-    fullName,
     email,
     username,
     password,
@@ -348,14 +345,12 @@ app.put("/api/profile/:id", (req, res) => {
     return res.status(404).json({ success: false, error: "User not found" });
   }
 
-  const fullName = String(req.body?.fullName || "").trim();
   const username = String(req.body?.username || "").trim();
 
-  if (!fullName || !username) {
-    return res.status(400).json({ success: false, error: "Full name and username are required" });
+  if (!username) {
+    return res.status(400).json({ success: false, error: "Username is required" });
   }
 
-  user.fullName = fullName;
   user.username = username;
   updateUser(user);
 
