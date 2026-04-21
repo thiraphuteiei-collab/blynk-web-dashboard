@@ -1,1 +1,95 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register</title>
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+  <section class="page-center">
+    <div class="auth-card">
+      <h1 class="brand-title">Create Account</h1>
+      <p class="brand-sub">Sign up to start using the system</p>
 
+      <div class="form-group">
+        <label class="form-label" for="fullName">Full name</label>
+        <input class="form-input" id="fullName" type="text" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">Email</label>
+        <input class="form-input" id="email" type="email" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input class="form-input" id="username" type="text" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-input" id="password" type="password" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="confirmPassword">Confirm Password</label>
+        <input class="form-input" id="confirmPassword" type="password" />
+      </div>
+
+      <div class="checkbox-row">
+        <input id="acceptTerms" type="checkbox" />
+        <label for="acceptTerms">I agree to the terms and conditions</label>
+      </div>
+
+      <button id="registerButton" class="btn btn-primary full" type="button">Register</button>
+      <div id="errorBox" class="message text-danger"></div>
+      <div id="successBox" class="message text-success"></div>
+
+      <div class="links-row">
+        <a href="/login.html">Already have an account? Login</a>
+      </div>
+    </div>
+  </section>
+
+  <script src="/js/app.js"></script>
+  <script>
+    document.getElementById("registerButton").addEventListener("click", async () => {
+      const fullName = document.getElementById("fullName").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const confirmPassword = document.getElementById("confirmPassword").value.trim();
+      const acceptTerms = document.getElementById("acceptTerms").checked;
+      const errorBox = document.getElementById("errorBox");
+      const successBox = document.getElementById("successBox");
+
+      try {
+        errorBox.textContent = "";
+        successBox.textContent = "";
+
+        if (password !== confirmPassword) {
+          throw new Error("Passwords do not match");
+        }
+
+        if (!acceptTerms) {
+          throw new Error("Please accept the terms");
+        }
+
+        const data = await fetchJson("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fullName, email, username, password })
+        });
+
+        successBox.textContent = data.message;
+        setTimeout(() => {
+          window.location.href = "/login.html";
+        }, 1000);
+      } catch (error) {
+        errorBox.textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>
