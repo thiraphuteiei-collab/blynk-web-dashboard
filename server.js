@@ -69,7 +69,9 @@ function sanitizeUser(user) {
 
 function findUserByEmail(email) {
   const users = readJson(USERS_FILE, []);
-  return users.find((u) => String(u.email || "").toLowerCase() === String(email || "").toLowerCase());
+  return users.find(
+    (u) => String(u.email || "").toLowerCase() === String(email || "").toLowerCase()
+  );
 }
 
 function findUserById(id) {
@@ -118,9 +120,12 @@ function parseBooleanLike(value) {
   return v === "1" || v === "true" || v === "on";
 }
 
-function parseNumber(value, fallback = 0) {
-  const num = Number(value);
-  return Number.isFinite(num) ? num : fallback;
+function parseNumberOrNull(value) {
+  if (value === null || value === undefined) return null;
+  const raw = String(value).trim().toLowerCase();
+  if (!raw || raw === "null" || raw === "nan" || raw === "undefined") return null;
+  const num = Number(raw);
+  return Number.isFinite(num) ? num : null;
 }
 
 function validateEmail(email) {
@@ -134,6 +139,10 @@ function validatePassword(password) {
 function computeAlertLabel(rawValue) {
   const value = String(rawValue || "").trim().toLowerCase();
 
+  if (!value || value === "null" || value === "undefined") {
+    return "ไม่มีข้อมูล";
+  }
+
   if (["0", "low", "empty", "near empty", "น้ำหมด", "น้ำต่ำ", "ใกล้หมด"].includes(value)) {
     return "น้ำใกล้หมด";
   }
@@ -146,6 +155,8 @@ function computeAlertLabel(rawValue) {
 }
 
 function sensorText(type, value) {
+  if (value === null) return "ไม่มีข้อมูลจากอุปกรณ์";
+
   if (type === "soil") {
     if (value <= 300) return "ดินแห้งมาก";
     if (value <= 1200) return "ดินค่อนข้างแห้ง";
@@ -170,6 +181,10 @@ function sensorText(type, value) {
   return "-";
 }
 
+function sensorHealth(...values) {
+  return values.every((v) => v !== null);
+}
+
 async function fetchSnapshot() {
   if (!BLYNK_TOKEN) throw new Error("ยังไม่ได้ตั้งค่า BLYNK_AUTH_TOKEN");
 
@@ -184,16 +199,16 @@ async function fetchSnapshot() {
     getValue(alert)
   ]);
 
-  const soilValue = parseNumber(soilRaw);
-  const waterValue = parseNumber(waterRaw);
-  const tempValue = parseNumber(tempRaw);
+  const soilValue = parseNumberOrNull(soilRaw);
+  const waterValue = parseNumberOrNull(waterRaw);
+  const tempValue = parseNumberOrNull(tempRaw);
   const alertValue = computeAlertLabel(alertRaw);
 
   return {
     updatedAt: new Date().toISOString(),
     source: {
       platform: "Blynk",
-      status: "ปกติ"
+      status: sensorHealth(soilValue, waterValue, tempValue) ? "ปกติ" : "บางส่วนไม่มีข้อมูล"
     },
     values: {
       pump: parseBooleanLike(pumpRaw),
