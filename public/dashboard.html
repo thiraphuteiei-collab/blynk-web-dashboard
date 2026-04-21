@@ -1,1 +1,220 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/css/app.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="top-title">
+        <h1 id="deviceName">Smart Watering Control</h1>
+        <p>Dashboard overview</p>
+      </div>
 
+      <div class="top-actions">
+        <div class="pill">Online: <strong id="onlineText">Checking...</strong></div>
+        <div class="pill">Last updated: <strong id="lastUpdated">-</strong></div>
+        <div class="pill">User: <strong id="currentUser">-</strong></div>
+        <a class="btn btn-light" href="/profile.html">Profile</a>
+        <button class="btn btn-danger" type="button" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <section class="grid-3">
+      <div class="card">
+        <h3>Pump</h3>
+        <div class="card-sub">Main control</div>
+        <button id="pumpButton" class="pump-btn" type="button">OFF</button>
+      </div>
+
+      <div class="card">
+        <h3>Auto Mode</h3>
+        <div class="card-sub" id="autoModeLabel">Disabled</div>
+        <div class="row-between">
+          <span></span>
+          <label class="switch">
+            <input id="autoModeSwitch" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Alert</h3>
+        <div class="card-sub">System alert</div>
+        <div id="alertText" class="metric-value">-</div>
+      </div>
+    </section>
+
+    <section class="grid-3">
+      <div class="card metric-card">
+        <div class="metric-label">Soil Moisture</div>
+        <div id="soilValue" class="metric-value soil">0</div>
+      </div>
+
+      <div class="card metric-card">
+        <div class="metric-label">Water Level</div>
+        <div id="waterValue" class="metric-value water">0</div>
+      </div>
+
+      <div class="card metric-card">
+        <div class="metric-label">Temperature</div>
+        <div id="tempValue" class="metric-value temp">0</div>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <div class="row-between" style="margin-bottom:12px;">
+          <div>
+            <h3 style="margin-bottom:6px;">Recent Activity</h3>
+            <div class="card-sub" style="margin:0;">System history log</div>
+          </div>
+          <button id="refreshHistoryButton" class="btn btn-light" type="button">Refresh</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Message</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>System Status</h3>
+        <div class="card-sub">Quick overview</div>
+        <div class="user-box">
+          <div class="user-row"><span>Pump</span><strong id="pumpStatus">OFF</strong></div>
+          <div class="user-row"><span>Auto Mode</span><strong id="autoStatus">OFF</strong></div>
+          <div class="user-row"><span>Alert</span><strong id="alertStatus">-</strong></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    redirectIfNotLoggedIn();
+    renderTopUser();
+
+    const el = {
+      onlineText: document.getElementById("onlineText"),
+      lastUpdated: document.getElementById("lastUpdated"),
+      pumpButton: document.getElementById("pumpButton"),
+      autoModeSwitch: document.getElementById("autoModeSwitch"),
+      autoModeLabel: document.getElementById("autoModeLabel"),
+      alertText: document.getElementById("alertText"),
+      soilValue: document.getElementById("soilValue"),
+      waterValue: document.getElementById("waterValue"),
+      tempValue: document.getElementById("tempValue"),
+      historyBody: document.getElementById("historyBody"),
+      refreshHistoryButton: document.getElementById("refreshHistoryButton"),
+      pumpStatus: document.getElementById("pumpStatus"),
+      autoStatus: document.getElementById("autoStatus"),
+      alertStatus: document.getElementById("alertStatus")
+    };
+
+    const state = {
+      values: {
+        pump: false,
+        soil: 0,
+        water: 0,
+        temp: 0,
+        autoMode: false,
+        alert: "-"
+      },
+      refreshMs: 5000
+    };
+
+    function renderStatus() {
+      el.pumpButton.textContent = state.values.pump ? "ON" : "OFF";
+      el.pumpButton.classList.toggle("on", state.values.pump);
+      el.autoModeSwitch.checked = !!state.values.autoMode;
+      el.autoModeLabel.textContent = state.values.autoMode ? "Enabled" : "Disabled";
+      el.alertText.textContent = state.values.alert || "-";
+      el.soilValue.textContent = Number(state.values.soil || 0).toLocaleString();
+      el.waterValue.textContent = Number(state.values.water || 0).toLocaleString();
+      el.tempValue.textContent = Number(state.values.temp || 0).toLocaleString();
+      el.pumpStatus.textContent = state.values.pump ? "ON" : "OFF";
+      el.autoStatus.textContent = state.values.autoMode ? "ON" : "OFF";
+      el.alertStatus.textContent = state.values.alert || "-";
+    }
+
+    function renderHistory(items) {
+      el.historyBody.innerHTML = "";
+      if (!items.length) {
+        el.historyBody.innerHTML = `<tr><td colspan="2">No recent activity</td></tr>`;
+        return;
+      }
+
+      for (const item of items.slice(0, 10)) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${formatDateTime(item.time)}</td>
+          <td>${item.message || "-"}</td>
+        `;
+        el.historyBody.appendChild(tr);
+      }
+    }
+
+    async function loadStatus() {
+      const data = await fetchJson("/api/status");
+      state.values = data.values;
+      el.onlineText.textContent = "Online";
+      el.lastUpdated.textContent = formatDateTime(data.updatedAt);
+      renderStatus();
+    }
+
+    async function loadHistory() {
+      const data = await fetchJson("/api/history");
+      renderHistory(data.items || []);
+    }
+
+    document.getElementById("pumpButton").addEventListener("click", async () => {
+      await fetchJson("/api/toggle/pump", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value: !state.values.pump })
+      });
+      await loadStatus();
+      await loadHistory();
+    });
+
+    document.getElementById("autoModeSwitch").addEventListener("change", async (e) => {
+      await fetchJson("/api/toggle/auto-mode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value: e.target.checked })
+      });
+      await loadStatus();
+      await loadHistory();
+    });
+
+    document.getElementById("refreshHistoryButton").addEventListener("click", loadHistory);
+
+    (async () => {
+      const config = await loadConfig();
+      state.refreshMs = config.refreshMs || 5000;
+      await loadStatus();
+      await loadHistory();
+
+      setInterval(async () => {
+        try {
+          await loadStatus();
+        } catch {
+          el.onlineText.textContent = "Offline";
+        }
+      }, state.refreshMs);
+    })();
+  </script>
+</body>
+</html>
