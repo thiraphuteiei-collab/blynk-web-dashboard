@@ -27,7 +27,7 @@
       <div class="form-group">
         <label class="form-label" for="password">รหัสผ่าน</label>
         <div class="password-wrap">
-          <input class="form-input" id="password" type="password" placeholder="อย่างน้อย 8 ตัวอักษร" />
+          <input class="form-input" id="password" type="password" placeholder="กรอกรหัสผ่านใหม่" />
           <button id="toggleRegisterPassword" class="password-toggle" type="button"></button>
         </div>
         <div class="field-hint">อย่างน้อย 8 ตัวอักษร</div>
@@ -124,7 +124,7 @@
           body: JSON.stringify({ email, username, password })
         });
 
-        successBox.textContent = data.message;
+        successBox.textContent = "สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบ";
         showToast("สมัครสมาชิกสำเร็จ", "success");
 
         setTimeout(() => {
