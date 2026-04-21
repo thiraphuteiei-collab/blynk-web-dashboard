@@ -17,7 +17,7 @@
       <div class="top-actions">
         <div class="pill">สถานะ: <strong id="onlineText">กำลังตรวจสอบ...</strong></div>
         <div class="pill">เวลาปัจจุบัน: <strong id="currentTime">-</strong></div>
-        <div class="pill">อัปเดตล่าสุด: <strong id="lastUpdated">-</strong></div>
+        <div class="pill">ข้อมูลล่าสุดจากอุปกรณ์: <strong id="lastUpdated">-</strong></div>
         <div class="pill">แหล่งข้อมูล: <strong id="sourceText">Blynk</strong></div>
         <div class="pill">ผู้ใช้: <strong id="currentUser">-</strong></div>
         <a class="btn btn-light" href="/profile.html">โปรไฟล์</a>
@@ -26,23 +26,17 @@
     </div>
 
     <section class="grid-3">
-      <div class="card card-with-icon">
-        <div class="card-icon">💧</div>
-        <div>
-          <h3>ปั๊มน้ำ</h3>
-          <div class="card-sub">ควบคุมการทำงานหลัก</div>
-        </div>
+      <div class="card">
+        <h3>ปั๊มน้ำ</h3>
+        <div class="card-sub">ควบคุมการทำงานหลัก</div>
         <button id="pumpButton" class="pump-btn" type="button">OFF</button>
         <div id="pumpStateText" class="status-note">สถานะปัจจุบัน: ปิด</div>
         <div id="pumpActionText" class="status-subnote">กดเพื่อเปิดปั๊มน้ำ</div>
       </div>
 
-      <div class="card card-with-icon">
-        <div class="card-icon">⚙️</div>
-        <div>
-          <h3>โหมดอัตโนมัติ</h3>
-          <div class="card-sub" id="autoModeLabel">ปิดอยู่</div>
-        </div>
+      <div class="card">
+        <h3>โหมดอัตโนมัติ</h3>
+        <div class="card-sub" id="autoModeLabel">ปิดอยู่</div>
         <div class="row-between">
           <span class="status-subnote" id="autoModeHint">เปิดเพื่อให้ระบบทำงานอัตโนมัติ</span>
           <label class="switch">
@@ -52,43 +46,31 @@
         </div>
       </div>
 
-      <div class="card card-with-icon">
-        <div class="card-icon">⚠️</div>
-        <div>
-          <h3>การแจ้งเตือน</h3>
-          <div class="card-sub">สถานะล่าสุดของระบบ</div>
-        </div>
+      <div class="card">
+        <h3>การแจ้งเตือน</h3>
+        <div class="card-sub">สถานะล่าสุดของระบบ</div>
         <div id="alertText" class="metric-value">-</div>
-        <div id="alertHint" class="sensor-note">ยังไม่มีการแจ้งเตือน</div>
+        <div id="alertHint" class="sensor-note tone-neutral">ยังไม่มีการแจ้งเตือน</div>
       </div>
     </section>
 
     <section class="grid-3">
       <div class="card metric-card">
-        <div class="metric-head">
-          <span class="metric-mini-icon">🌱</span>
-          <span class="metric-label">ความชื้นดิน</span>
-        </div>
+        <div class="metric-label">ความชื้นดิน</div>
         <div id="soilValue" class="metric-value soil">0</div>
-        <div id="soilHint" class="sensor-note">-</div>
+        <div id="soilHint" class="sensor-note tone-neutral">-</div>
       </div>
 
       <div class="card metric-card">
-        <div class="metric-head">
-          <span class="metric-mini-icon">🛢️</span>
-          <span class="metric-label">ระดับน้ำ</span>
-        </div>
+        <div class="metric-label">ระดับน้ำ</div>
         <div id="waterValue" class="metric-value water">0</div>
-        <div id="waterHint" class="sensor-note">-</div>
+        <div id="waterHint" class="sensor-note tone-neutral">-</div>
       </div>
 
       <div class="card metric-card">
-        <div class="metric-head">
-          <span class="metric-mini-icon">🌡️</span>
-          <span class="metric-label">อุณหภูมิ</span>
-        </div>
+        <div class="metric-label">อุณหภูมิ</div>
         <div id="tempValue" class="metric-value temp">0</div>
-        <div id="tempHint" class="sensor-note">-</div>
+        <div id="tempHint" class="sensor-note tone-neutral">-</div>
       </div>
     </section>
 
@@ -183,14 +165,6 @@
       el.currentTime.textContent = new Date().toLocaleTimeString("th-TH");
     }
 
-    function toneClassFromText(text) {
-      const value = String(text || "").toLowerCase();
-      if (value.includes("ต่ำ") || value.includes("สูงมาก") || value.includes("ใกล้หมด")) return "tone-danger";
-      if (value.includes("ค่อนข้าง") || value.includes("สูงกว่าปกติ") || value.includes("เหลือน้อย")) return "tone-warning";
-      if (value.includes("ปกติ") || value.includes("ดี") || value.includes("ชื้น")) return "tone-success";
-      return "tone-neutral";
-    }
-
     function badgeClass(type) {
       const t = String(type || "").toUpperCase();
       if (t === "PUMP") return "badge badge-pump";
@@ -205,16 +179,19 @@
       const soilText = state.values.descriptions?.soil || "-";
       const waterText = state.values.descriptions?.water || "-";
       const tempText = state.values.descriptions?.temp || "-";
+      const isWaterLow = state.values.alert === "น้ำใกล้หมด";
+      const isAutoOn = !!state.values.autoMode;
 
       el.pumpButton.textContent = isPumpOn ? "ON" : "OFF";
       el.pumpButton.classList.toggle("on", isPumpOn);
 
-      el.autoModeSwitch.checked = !!state.values.autoMode;
-      el.autoModeLabel.textContent = state.values.autoMode ? "เปิดอยู่" : "ปิดอยู่";
-      el.autoModeHint.textContent = state.values.autoMode ? "ระบบกำลังช่วยควบคุมให้อัตโนมัติ" : "เปิดเพื่อให้ระบบทำงานอัตโนมัติ";
+      el.autoModeSwitch.checked = isAutoOn;
+      el.autoModeLabel.textContent = isAutoOn ? "เปิดอยู่" : "ปิดอยู่";
+      el.autoModeHint.textContent = isAutoOn ? "ระบบกำลังช่วยควบคุมให้อัตโนมัติ" : "เปิดเพื่อให้ระบบทำงานอัตโนมัติ";
 
       el.alertText.textContent = state.values.alert || "-";
-      el.alertHint.textContent = state.values.alert === "น้ำใกล้หมด" ? "ควรเติมน้ำในถัง" : "ระบบอยู่ในสถานะปกติ";
+      el.alertHint.textContent = isWaterLow ? "พบการแจ้งเตือนระดับน้ำต่ำ กรุณาเติมน้ำ" : "ระบบอยู่ในสถานะปกติ";
+      el.alertHint.className = `sensor-note ${toneClassFromText(el.alertHint.textContent)}`;
 
       el.soilValue.textContent = Number(state.values.soil || 0).toLocaleString();
       el.waterValue.textContent = Number(state.values.water || 0).toLocaleString();
@@ -227,22 +204,31 @@
       el.soilHint.className = `sensor-note ${toneClassFromText(soilText)}`;
       el.waterHint.className = `sensor-note ${toneClassFromText(waterText)}`;
       el.tempHint.className = `sensor-note ${toneClassFromText(tempText)}`;
-      el.alertHint.className = `sensor-note ${toneClassFromText(el.alertHint.textContent)}`;
 
       el.pumpStatus.textContent = isPumpOn ? "ON" : "OFF";
-      el.autoStatus.textContent = state.values.autoMode ? "ON" : "OFF";
+      el.autoStatus.textContent = isAutoOn ? "ON" : "OFF";
       el.alertStatus.textContent = state.values.alert || "-";
 
       el.pumpStateText.textContent = `สถานะปัจจุบัน: ${isPumpOn ? "เปิดอยู่" : "ปิด"}`;
-      if (isPumpOn && state.lastPumpChangeTime) {
+
+      if (isAutoOn) {
+        el.pumpActionText.textContent = "ปิดโหมดอัตโนมัติก่อน จึงจะควบคุมปั๊มน้ำเองได้";
+        el.pumpButton.disabled = true;
+      } else if (isWaterLow && !isPumpOn) {
+        el.pumpActionText.textContent = "ระดับน้ำต่ำ ไม่สามารถเปิดปั๊มน้ำได้";
+        el.pumpButton.disabled = true;
+      } else if (isPumpOn && state.lastPumpChangeTime) {
         el.pumpActionText.textContent = `เริ่มทำงานเมื่อ ${formatDateTime(state.lastPumpChangeTime)}`;
+        el.pumpButton.disabled = false;
       } else {
         el.pumpActionText.textContent = isPumpOn ? "ระบบกำลังจ่ายน้ำ" : "กดเพื่อเปิดปั๊มน้ำ";
+        el.pumpButton.disabled = false;
       }
     }
 
     function renderHistory(items) {
       el.historyBody.innerHTML = "";
+
       if (!items.length) {
         el.historyBody.innerHTML = `<tr><td colspan="3">ยังไม่มีประวัติการทำงาน</td></tr>`;
         return;
@@ -283,7 +269,11 @@
 
     document.getElementById("pumpButton").addEventListener("click", async () => {
       const nextValue = !state.values.pump;
-      const ok = confirm(nextValue ? "คุณต้องการเปิดปั๊มน้ำใช่หรือไม่" : "คุณต้องการปิดปั๊มน้ำใช่หรือไม่");
+      const ok = await showConfirm(
+        nextValue ? "คุณต้องการเปิดปั๊มน้ำใช่หรือไม่" : "คุณต้องการปิดปั๊มน้ำใช่หรือไม่",
+        nextValue ? "ยืนยันการเปิดปั๊มน้ำ" : "ยืนยันการปิดปั๊มน้ำ"
+      );
+
       if (!ok) return;
 
       await fetchJson("/api/toggle/pump", {
@@ -300,7 +290,11 @@
 
     document.getElementById("autoModeSwitch").addEventListener("change", async (e) => {
       const nextValue = e.target.checked;
-      const ok = confirm(nextValue ? "ต้องการเปิดโหมดอัตโนมัติใช่หรือไม่" : "ต้องการปิดโหมดอัตโนมัติใช่หรือไม่");
+
+      const ok = await showConfirm(
+        nextValue ? "ต้องการเปิดโหมดอัตโนมัติใช่หรือไม่" : "ต้องการปิดโหมดอัตโนมัติใช่หรือไม่",
+        nextValue ? "ยืนยันการเปิดโหมดอัตโนมัติ" : "ยืนยันการปิดโหมดอัตโนมัติ"
+      );
 
       if (!ok) {
         e.target.checked = !nextValue;
@@ -323,6 +317,7 @@
     (async () => {
       const config = await loadConfig();
       state.refreshMs = config.refreshMs || 5000;
+
       updateClock();
       setInterval(updateClock, 1000);
 
