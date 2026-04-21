@@ -3,61 +3,61 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Profile</title>
+  <title>โปรไฟล์</title>
   <link rel="stylesheet" href="/css/app.css" />
 </head>
 <body>
   <div class="wrap">
     <div class="topbar">
       <div class="top-title">
-        <h1>Profile & Settings</h1>
-        <p>Manage your account</p>
+        <h1>โปรไฟล์และการตั้งค่า</h1>
+        <p>จัดการข้อมูลบัญชีของคุณ</p>
       </div>
 
       <div class="top-actions">
-        <div class="pill">User: <strong id="currentUser">-</strong></div>
-        <a class="btn btn-light" href="/dashboard.html">Back to Dashboard</a>
-        <button class="btn btn-danger" type="button" onclick="logout()">Logout</button>
+        <div class="pill">ผู้ใช้: <strong id="currentUser">-</strong></div>
+        <a class="btn btn-light" href="/dashboard.html">กลับหน้าแดชบอร์ด</a>
+        <button class="btn btn-danger" type="button" onclick="logout()">ออกจากระบบ</button>
       </div>
     </div>
 
     <section class="grid-2">
       <div class="card">
-        <h3>Profile</h3>
-        <div class="card-sub">Update your information</div>
+        <h3>ข้อมูลบัญชี</h3>
+        <div class="card-sub">แก้ไขชื่อผู้ใช้</div>
 
         <div class="settings-box">
           <div class="form-group">
-            <label class="form-label" for="username">Username</label>
+            <label class="form-label" for="username">ชื่อผู้ใช้</label>
             <input class="form-input" id="username" type="text" />
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="email">Email</label>
+            <label class="form-label" for="email">อีเมล</label>
             <input class="form-input" id="email" type="email" disabled />
           </div>
 
-          <button id="saveProfileButton" class="btn btn-primary" type="button">Save Profile</button>
+          <button id="saveProfileButton" class="btn btn-primary" type="button">บันทึกข้อมูล</button>
           <div id="profileMessage" class="message"></div>
         </div>
       </div>
 
       <div class="card">
-        <h3>Change Password</h3>
-        <div class="card-sub">Update your password</div>
+        <h3>เปลี่ยนรหัสผ่าน</h3>
+        <div class="card-sub">อัปเดตรหัสผ่านใหม่</div>
 
         <div class="settings-box">
           <div class="form-group">
-            <label class="form-label" for="currentPassword">Current password</label>
+            <label class="form-label" for="currentPassword">รหัสผ่านปัจจุบัน</label>
             <input class="form-input" id="currentPassword" type="password" />
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="newPassword">New password</label>
+            <label class="form-label" for="newPassword">รหัสผ่านใหม่</label>
             <input class="form-input" id="newPassword" type="password" />
           </div>
 
-          <button id="savePasswordButton" class="btn btn-primary" type="button">Change Password</button>
+          <button id="savePasswordButton" class="btn btn-primary" type="button">เปลี่ยนรหัสผ่าน</button>
           <div id="passwordMessage" class="message"></div>
         </div>
       </div>
@@ -92,7 +92,7 @@
 
         setStoredUser(data.user);
         renderTopUser();
-        box.textContent = "Profile updated";
+        box.textContent = "บันทึกข้อมูลสำเร็จ";
         box.className = "message text-success";
       } catch (error) {
         box.textContent = error.message;
