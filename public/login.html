@@ -15,11 +15,16 @@
       <div class="form-group">
         <label class="form-label" for="email">อีเมล</label>
         <input class="form-input" id="email" type="email" />
+        <div id="emailError" class="field-error"></div>
       </div>
 
       <div class="form-group">
         <label class="form-label" for="password">รหัสผ่าน</label>
-        <input class="form-input" id="password" type="password" />
+        <div class="password-wrap">
+          <input class="form-input" id="password" type="password" />
+          <button id="toggleLoginPassword" class="password-toggle" type="button">แสดง</button>
+        </div>
+        <div id="passwordError" class="field-error"></div>
       </div>
 
       <div class="checkbox-row">
@@ -39,13 +44,37 @@
 
   <script src="/js/app.js"></script>
   <script>
+    setupPasswordToggle("toggleLoginPassword", "password");
+
     document.getElementById("loginButton").addEventListener("click", async () => {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
+      const button = document.getElementById("loginButton");
       const errorBox = document.getElementById("errorBox");
 
+      errorBox.textContent = "";
+      clearFieldErrors(["email", "password"]);
+
+      let hasError = false;
+
+      if (!email) {
+        setFieldError("email", "กรุณากรอกอีเมล");
+        hasError = true;
+      } else if (!validateEmail(email)) {
+        setFieldError("email", "รูปแบบอีเมลไม่ถูกต้อง");
+        hasError = true;
+      }
+
+      if (!password) {
+        setFieldError("password", "กรุณากรอกรหัสผ่าน");
+        hasError = true;
+      }
+
+      if (hasError) return;
+
       try {
-        errorBox.textContent = "";
+        setButtonLoading(button, true, "กำลังเข้าสู่ระบบ...", "เข้าสู่ระบบ");
+
         const data = await fetchJson("/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -54,16 +83,20 @@
 
         setStoredToken(data.token);
         setStoredUser(data.user);
-        window.location.href = "/dashboard.html";
+        showToast("เข้าสู่ระบบสำเร็จ", "success");
+
+        setTimeout(() => {
+          window.location.href = "/dashboard.html";
+        }, 400);
       } catch (error) {
         errorBox.textContent = error.message;
+      } finally {
+        setButtonLoading(button, false, "", "เข้าสู่ระบบ");
       }
     });
 
     document.getElementById("password").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        document.getElementById("loginButton").click();
-      }
+      if (e.key === "Enter") document.getElementById("loginButton").click();
     });
   </script>
 </body>
