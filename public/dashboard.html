@@ -57,20 +57,20 @@
     <section class="grid-3">
       <div class="card metric-card">
         <div class="metric-label">ความชื้นดิน</div>
-        <div id="soilValue" class="metric-value soil">0</div>
-        <div id="soilHint" class="sensor-note tone-neutral">-</div>
+        <div id="soilValue" class="metric-value soil">-</div>
+        <div id="soilHint" class="sensor-note tone-neutral">กำลังรอข้อมูลจากอุปกรณ์</div>
       </div>
 
       <div class="card metric-card">
         <div class="metric-label">ระดับน้ำ</div>
-        <div id="waterValue" class="metric-value water">0</div>
-        <div id="waterHint" class="sensor-note tone-neutral">-</div>
+        <div id="waterValue" class="metric-value water">-</div>
+        <div id="waterHint" class="sensor-note tone-neutral">กำลังรอข้อมูลจากอุปกรณ์</div>
       </div>
 
       <div class="card metric-card">
         <div class="metric-label">อุณหภูมิ</div>
-        <div id="tempValue" class="metric-value temp">0</div>
-        <div id="tempHint" class="sensor-note tone-neutral">-</div>
+        <div id="tempValue" class="metric-value temp">-</div>
+        <div id="tempHint" class="sensor-note tone-neutral">กำลังรอข้อมูลจากอุปกรณ์</div>
       </div>
     </section>
 
@@ -146,15 +146,15 @@
     const state = {
       values: {
         pump: false,
-        soil: 0,
-        water: 0,
-        temp: 0,
+        soil: null,
+        water: null,
+        temp: null,
         autoMode: false,
         alert: "-",
         descriptions: {
-          soil: "-",
-          water: "-",
-          temp: "-"
+          soil: "กำลังรอข้อมูลจากอุปกรณ์",
+          water: "กำลังรอข้อมูลจากอุปกรณ์",
+          temp: "กำลังรอข้อมูลจากอุปกรณ์"
         }
       },
       refreshMs: 5000,
@@ -176,9 +176,9 @@
 
     function renderStatus() {
       const isPumpOn = state.values.pump;
-      const soilText = state.values.descriptions?.soil || "-";
-      const waterText = state.values.descriptions?.water || "-";
-      const tempText = state.values.descriptions?.temp || "-";
+      const soilText = state.values.descriptions?.soil || "ไม่มีข้อมูล";
+      const waterText = state.values.descriptions?.water || "ไม่มีข้อมูล";
+      const tempText = state.values.descriptions?.temp || "ไม่มีข้อมูล";
       const isWaterLow = state.values.alert === "น้ำใกล้หมด";
       const isAutoOn = !!state.values.autoMode;
 
@@ -190,12 +190,20 @@
       el.autoModeHint.textContent = isAutoOn ? "ระบบกำลังช่วยควบคุมให้อัตโนมัติ" : "เปิดเพื่อให้ระบบทำงานอัตโนมัติ";
 
       el.alertText.textContent = state.values.alert || "-";
-      el.alertHint.textContent = isWaterLow ? "พบการแจ้งเตือนระดับน้ำต่ำ กรุณาเติมน้ำ" : "ระบบอยู่ในสถานะปกติ";
+
+      if (state.values.alert === "น้ำใกล้หมด") {
+        el.alertHint.textContent = "ระบบยังออนไลน์ แต่มีการแจ้งเตือน 1 รายการ กรุณาเติมน้ำในถัง";
+      } else if (state.values.alert === "ไม่มีข้อมูล") {
+        el.alertHint.textContent = "ยังไม่ได้รับข้อมูลจากอุปกรณ์";
+      } else {
+        el.alertHint.textContent = "ระบบอยู่ในสถานะปกติ";
+      }
+
       el.alertHint.className = `sensor-note ${toneClassFromText(el.alertHint.textContent)}`;
 
-      el.soilValue.textContent = Number(state.values.soil || 0).toLocaleString();
-      el.waterValue.textContent = Number(state.values.water || 0).toLocaleString();
-      el.tempValue.textContent = Number(state.values.temp || 0).toLocaleString();
+      el.soilValue.textContent = formatNumberOrDash(state.values.soil);
+      el.waterValue.textContent = formatNumberOrDash(state.values.water);
+      el.tempValue.textContent = formatNumberOrDash(state.values.temp);
 
       el.soilHint.textContent = soilText;
       el.waterHint.textContent = waterText;
@@ -276,16 +284,20 @@
 
       if (!ok) return;
 
-      await fetchJson("/api/toggle/pump", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ value: nextValue })
-      });
+      try {
+        await fetchJson("/api/toggle/pump", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ value: nextValue })
+        });
 
-      state.lastPumpChangeTime = new Date().toISOString();
-      await loadStatus();
-      await loadHistory();
-      showToast(nextValue ? "เปิดปั๊มน้ำแล้ว" : "ปิดปั๊มน้ำแล้ว", "success");
+        state.lastPumpChangeTime = new Date().toISOString();
+        await loadStatus();
+        await loadHistory();
+        showToast(nextValue ? "เปิดปั๊มน้ำแล้ว" : "ปิดปั๊มน้ำแล้ว", "success");
+      } catch (error) {
+        showToast(error.message, "danger");
+      }
     });
 
     document.getElementById("autoModeSwitch").addEventListener("change", async (e) => {
@@ -301,15 +313,19 @@
         return;
       }
 
-      await fetchJson("/api/toggle/auto-mode", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ value: nextValue })
-      });
+      try {
+        await fetchJson("/api/toggle/auto-mode", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ value: nextValue })
+        });
 
-      await loadStatus();
-      await loadHistory();
-      showToast(nextValue ? "เปิดโหมดอัตโนมัติแล้ว" : "ปิดโหมดอัตโนมัติแล้ว", "success");
+        await loadStatus();
+        await loadHistory();
+        showToast(nextValue ? "เปิดโหมดอัตโนมัติแล้ว" : "ปิดโหมดอัตโนมัติแล้ว", "success");
+      } catch (error) {
+        showToast(error.message, "danger");
+      }
     });
 
     document.getElementById("refreshHistoryButton").addEventListener("click", loadHistory);
@@ -321,8 +337,15 @@
       updateClock();
       setInterval(updateClock, 1000);
 
-      await loadStatus();
-      await loadHistory();
+      try {
+        await loadStatus();
+        await loadHistory();
+      } catch (error) {
+        el.onlineText.textContent = "ออฟไลน์";
+        el.sourceText.textContent = "Blynk • ผิดปกติ";
+        el.blynkStatus.textContent = "ผิดปกติ";
+        showToast("ยังไม่ได้รับข้อมูลจากอุปกรณ์", "warning");
+      }
 
       setInterval(async () => {
         try {
