@@ -39,7 +39,8 @@
       padding: 20px;
     }
 
-    .login-card, .card {
+    .login-card,
+    .card {
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: var(--radius);
@@ -306,7 +307,8 @@
     }
 
     @media (max-width: 900px) {
-      .grid-3, .grid-2 {
+      .grid-3,
+      .grid-2 {
         grid-template-columns: 1fr;
       }
     }
@@ -316,7 +318,7 @@
   <section id="loginPage" class="login-page">
     <div class="login-card">
       <h1>Login</h1>
-      <p>เข้าสู่ระบบ</p>
+      <p>เข้าสู่ระบบเพื่อใช้งานแดชบอร์ด</p>
 
       <div class="field">
         <label for="username">Username</label>
@@ -337,7 +339,7 @@
     <div class="topbar">
       <div class="title">
         <h1 id="deviceName">Smart Garden Dashboard</h1>
-        <p>ระบบติดตามและควบคุม</p>
+        <p>เว็บสำหรับดูสถานะและควบคุมระบบรดน้ำ</p>
       </div>
 
       <div class="top-right">
@@ -395,7 +397,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;">
           <div>
             <h3 style="margin-bottom:6px;">History</h3>
-            <div class="sub" style="margin:0;">ข้อมูลย้อนหลัง</div>
+            <div class="sub" style="margin:0;">ข้อมูลย้อนหลังของระบบ</div>
           </div>
           <button id="refreshHistoryButton" class="btn btn-light">รีเฟรช</button>
         </div>
@@ -420,7 +422,7 @@
 
       <div class="card">
         <h3>ข้อมูลผู้ใช้</h3>
-        <div class="sub">ผู้ที่เข้าสู่ระบบ</div>
+        <div class="sub">ข้อมูลของผู้ที่กำลังเข้าสู่ระบบ</div>
         <div id="userInfo" class="user-box"></div>
       </div>
     </section>
