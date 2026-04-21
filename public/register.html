@@ -13,11 +13,6 @@
       <p class="brand-sub">Sign up to start using the system</p>
 
       <div class="form-group">
-        <label class="form-label" for="fullName">Full name</label>
-        <input class="form-input" id="fullName" type="text" />
-      </div>
-
-      <div class="form-group">
         <label class="form-label" for="email">Email</label>
         <input class="form-input" id="email" type="email" />
       </div>
@@ -55,7 +50,6 @@
   <script src="/js/app.js"></script>
   <script>
     document.getElementById("registerButton").addEventListener("click", async () => {
-      const fullName = document.getElementById("fullName").value.trim();
       const email = document.getElementById("email").value.trim();
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
@@ -79,7 +73,7 @@
         const data = await fetchJson("/api/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fullName, email, username, password })
+          body: JSON.stringify({ email, username, password })
         });
 
         successBox.textContent = data.message;
