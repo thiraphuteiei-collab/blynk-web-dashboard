@@ -6,183 +6,121 @@
   <title>Smart Garden Dashboard</title>
   <style>
     :root {
-      --bg: #f6f8fb;
-      --surface: rgba(255,255,255,0.85);
-      --surface-strong: #ffffff;
-      --text: #142033;
-      --muted: #6d7a8c;
-      --line: rgba(20,32,51,0.08);
-      --shadow: 0 20px 50px rgba(18, 33, 60, 0.10);
-      --primary: #4f8cff;
-      --primary-2: #7aa8ff;
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --primary: #2563eb;
       --success: #10b981;
       --danger: #ef4444;
-      --warning: #f59e0b;
-      --soil: #ff7a45;
-      --water: #19c2c9;
-      --temp: #b7e61d;
-      --card-radius: 24px;
+      --soil: #f97316;
+      --water: #06b6d4;
+      --temp: #84cc16;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 20px;
     }
-
-    body.theme-1 { --bg:#f6f8fb; --surface:rgba(255,255,255,0.86); --surface-strong:#fff; --text:#142033; --muted:#6d7a8c; --primary:#4f8cff; --primary-2:#7aa8ff; }
-    body.theme-2 { --bg:#f7f8f4; --surface:rgba(255,255,255,0.9); --surface-strong:#fff; --text:#1d2a20; --muted:#6f7f70; --primary:#5c8f6a; --primary-2:#7fb08d; }
-    body.theme-3 { --bg:#fbf7f5; --surface:rgba(255,255,255,0.9); --surface-strong:#fff; --text:#32221f; --muted:#8a7772; --primary:#d98c7c; --primary-2:#eab0a4; }
-    body.theme-4 { --bg:#f5f8fc; --surface:rgba(255,255,255,0.9); --surface-strong:#fff; --text:#1c273a; --muted:#6c7892; --primary:#6f7cf7; --primary-2:#99a3ff; }
-    body.theme-5 { --bg:#f9fafb; --surface:rgba(255,255,255,0.9); --surface-strong:#fff; --text:#1f2937; --muted:#6b7280; --primary:#0ea5e9; --primary-2:#67e8f9; }
-    body.theme-6 { --bg:#f7f6fc; --surface:rgba(255,255,255,0.9); --surface-strong:#fff; --text:#241b3c; --muted:#7d74a0; --primary:#8b5cf6; --primary-2:#c4b5fd; }
-    body.theme-7 { --bg:#faf8f3; --surface:rgba(255,255,255,0.92); --surface-strong:#fff; --text:#33261b; --muted:#8b7a69; --primary:#d4a373; --primary-2:#edc4a0; }
-    body.theme-8 { --bg:#f4fbfb; --surface:rgba(255,255,255,0.9); --surface-strong:#fff; --text:#163133; --muted:#618084; --primary:#14b8a6; --primary-2:#5eead4; }
-    body.theme-9 { --bg:#f7f7f7; --surface:rgba(255,255,255,0.92); --surface-strong:#fff; --text:#202020; --muted:#6b6b6b; --primary:#3f83f8; --primary-2:#93c5fd; }
 
     * { box-sizing: border-box; }
-
-    html, body {
-      margin: 0;
-      min-height: 100%;
-    }
-
     body {
+      margin: 0;
       font-family: "Segoe UI", Tahoma, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(255,255,255,0.8), transparent 35%),
-        linear-gradient(135deg, rgba(255,255,255,0.35), rgba(255,255,255,0)),
-        var(--bg);
+      background: var(--bg);
       color: var(--text);
-      transition: background 0.3s ease, color 0.3s ease;
     }
 
     .hidden { display: none !important; }
 
-    .app-shell {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 22px;
-    }
-
-    .glass {
-      background: var(--surface);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      border-radius: var(--card-radius);
-    }
-
-    .login-screen {
+    .login-page {
       min-height: 100vh;
       display: grid;
       place-items: center;
-      padding: 24px;
+      padding: 20px;
+    }
+
+    .login-card, .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
 
     .login-card {
-      width: min(100%, 430px);
+      width: 100%;
+      max-width: 420px;
       padding: 28px;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 22px;
-    }
-
-    .brand-icon,
-    .mini-icon {
-      width: 58px;
-      height: 58px;
-      border-radius: 18px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, var(--primary), var(--primary-2));
-      color: white;
+    .login-card h1 {
+      margin: 0 0 8px;
       font-size: 28px;
-      box-shadow: 0 12px 30px rgba(79,140,255,0.25);
     }
 
-    .brand h1,
-    .title-block h1 {
-      margin: 0;
-      font-size: clamp(24px, 4vw, 34px);
-      line-height: 1.1;
-    }
-
-    .brand p,
-    .title-block p,
-    .muted,
-    .subtle,
-    .metric-sub,
-    .section-sub {
-      margin: 6px 0 0;
+    .login-card p {
+      margin: 0 0 20px;
       color: var(--muted);
     }
 
     .field {
-      margin-top: 16px;
+      margin-bottom: 14px;
     }
 
     .field label {
       display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
       font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
     }
 
-    .field input,
-    .theme-select,
-    .search-box {
+    .field input {
       width: 100%;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,0.85);
-      border-radius: 16px;
+      border-radius: 14px;
       padding: 14px 16px;
       font-size: 15px;
-      color: var(--text);
       outline: none;
     }
 
-    .field input:focus,
-    .theme-select:focus,
-    .search-box:focus {
+    .field input:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(79,140,255,0.12);
     }
 
     .btn {
       border: none;
-      border-radius: 18px;
-      padding: 14px 18px;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 15px;
       font-weight: 700;
       cursor: pointer;
-      transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
     }
-
-    .btn:active { transform: translateY(1px); }
 
     .btn-primary {
       width: 100%;
-      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      background: var(--primary);
       color: white;
-      margin-top: 18px;
     }
 
-    .btn-secondary {
-      background: rgba(79,140,255,0.10);
+    .btn-light {
+      background: #eff6ff;
       color: var(--primary);
     }
 
     .btn-danger {
-      background: rgba(239,68,68,0.12);
+      background: #fef2f2;
       color: var(--danger);
     }
 
-    .login-note {
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(79,140,255,0.08);
-      color: var(--muted);
+    .error {
+      margin-top: 12px;
+      color: var(--danger);
       font-size: 14px;
+      font-weight: 600;
+    }
+
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px;
     }
 
     .topbar {
@@ -190,119 +128,91 @@
       justify-content: space-between;
       align-items: center;
       gap: 16px;
-      margin-bottom: 18px;
       flex-wrap: wrap;
-    }
-
-    .title-side,
-    .top-actions,
-    .history-tools,
-    .toolbar-grid,
-    .control-grid,
-    .metrics-grid,
-    .bottom-grid,
-    .history-table {
-      display: grid;
-      gap: 16px;
-    }
-
-    .title-side {
-      grid-template-columns: auto 1fr;
-      align-items: center;
-    }
-
-    .top-actions {
-      grid-template-columns: repeat(3, auto);
-      align-items: center;
-    }
-
-    .toolbar,
-    .panel,
-    .metric-card,
-    .history-card,
-    .status-chip,
-    .pill {
-      border: 1px solid var(--line);
-      background: var(--surface);
-      border-radius: var(--card-radius);
-      box-shadow: var(--shadow);
-    }
-
-    .toolbar {
-      padding: 18px;
       margin-bottom: 18px;
     }
 
-    .toolbar-grid {
-      grid-template-columns: 1.1fr 0.9fr 0.8fr;
+    .title h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .title p {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .top-right {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
       align-items: center;
     }
 
-    .status-chip,
     .pill {
-      padding: 12px 14px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.8);
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 10px 14px;
+      box-shadow: var(--shadow);
       font-size: 14px;
     }
 
-    .status-chip strong,
-    .pill strong { color: var(--text); }
-
-    .control-grid {
+    .grid-3 {
+      display: grid;
       grid-template-columns: repeat(3, 1fr);
-      margin-bottom: 18px;
+      gap: 16px;
+      margin-bottom: 16px;
     }
 
-    .panel {
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+    }
+
+    .card {
       padding: 20px;
     }
 
-    .panel h3,
-    .section-title {
-      margin: 0;
+    .card h3 {
+      margin: 0 0 10px;
       font-size: 18px;
     }
 
-    .panel-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      gap: 12px;
+    .sub {
+      color: var(--muted);
+      font-size: 14px;
       margin-bottom: 14px;
-      flex-wrap: wrap;
     }
 
-    .pump-button {
+    .pump-btn {
       width: 100%;
-      min-height: 76px;
+      min-height: 70px;
       font-size: 24px;
-      border-radius: 22px;
-      background: linear-gradient(135deg, #9ca3af, #cbd5e1);
-      color: white;
-      border: none;
-      cursor: pointer;
       font-weight: 800;
-      letter-spacing: 0.5px;
+      border: none;
+      border-radius: 18px;
+      color: white;
+      background: #94a3b8;
+      cursor: pointer;
     }
 
-    .pump-button.on {
-      background: linear-gradient(135deg, #0ea5e9, #22d3ee);
+    .pump-btn.on {
+      background: var(--primary);
     }
 
     .switch-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 16px;
-      margin-top: 14px;
+      gap: 12px;
     }
 
     .switch {
       position: relative;
-      width: 74px;
+      width: 72px;
       height: 40px;
-      flex-shrink: 0;
     }
 
     .switch input { display: none; }
@@ -310,10 +220,10 @@
     .slider {
       position: absolute;
       inset: 0;
-      background: #c0c8d4;
       border-radius: 999px;
+      background: #cbd5e1;
       cursor: pointer;
-      transition: 0.25s ease;
+      transition: 0.25s;
     }
 
     .slider::before {
@@ -324,325 +234,130 @@
       left: 5px;
       top: 5px;
       border-radius: 50%;
-      background: #fff;
-      transition: 0.25s ease;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      background: white;
+      transition: 0.25s;
     }
 
     .switch input:checked + .slider {
-      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      background: var(--primary);
     }
 
     .switch input:checked + .slider::before {
-      transform: translateX(34px);
+      transform: translateX(32px);
     }
 
-    .alert-box {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      font-size: clamp(20px, 4vw, 30px);
-      font-weight: 800;
-      min-height: 80px;
+    .metric {
+      text-align: center;
     }
 
-    .alert-icon {
-      width: 54px;
-      height: 54px;
-      border-radius: 18px;
-      display: grid;
-      place-items: center;
-      background: rgba(25,194,201,0.12);
-      font-size: 28px;
-    }
-
-    .metrics-grid {
-      grid-template-columns: repeat(3, 1fr);
-      margin-bottom: 18px;
-    }
-
-    .metric-card {
-      padding: 20px;
-    }
-
-    .metric-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .metric .label {
+      color: var(--muted);
+      font-size: 14px;
       margin-bottom: 8px;
     }
 
-    .badge {
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      color: white;
-    }
-
-    .soil-badge { background: linear-gradient(135deg, #ff7a45, #ff9b71); }
-    .water-badge { background: linear-gradient(135deg, #06b6d4, #67e8f9); }
-    .temp-badge { background: linear-gradient(135deg, #84cc16, #bef264); color: #243100; }
-
-    .gauge-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 8px;
-    }
-
-    .gauge {
-      --value: 0;
-      --accent: var(--primary);
-      --size: min(50vw, 220px);
-      width: var(--size);
-      height: calc(var(--size) / 2 + 10px);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .gauge::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-top-left-radius: calc(var(--size) / 2);
-      border-top-right-radius: calc(var(--size) / 2);
-      border: 18px solid #e8edf5;
-      border-bottom: 0;
-    }
-
-    .gauge::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-top-left-radius: calc(var(--size) / 2);
-      border-top-right-radius: calc(var(--size) / 2);
-      border: 18px solid transparent;
-      border-bottom: 0;
-      border-top-color: var(--accent);
-      transform-origin: 50% 100%;
-      transform: rotate(calc((var(--value) * 1.8deg) - 90deg));
-      transition: transform 0.45s ease;
-    }
-
-    .gauge-value {
-      position: absolute;
-      left: 50%;
-      bottom: 6px;
-      transform: translateX(-50%);
-      text-align: center;
-      width: 100%;
-      font-size: clamp(22px, 4vw, 30px);
+    .metric .value {
+      font-size: 34px;
       font-weight: 800;
     }
 
-    .gauge-unit {
-      font-size: 16px;
-      color: var(--muted);
-    }
+    .soil { color: var(--soil); }
+    .water { color: var(--water); }
+    .temp { color: var(--temp); }
 
-    .gauge-range {
-      width: min(50vw, 220px);
-      display: flex;
-      justify-content: space-between;
-      font-size: 14px;
-      color: var(--muted);
-      margin-top: 8px;
-    }
-
-    .bottom-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .history-card {
-      padding: 20px;
-      overflow: hidden;
-    }
-
-    .history-tools {
-      grid-template-columns: 1fr auto auto;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-
-    .history-list {
+    .table-wrap {
       overflow: auto;
-      border-radius: 18px;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,0.8);
+      border-radius: 16px;
     }
 
-    .history-table {
-      grid-template-columns: 170px 100px 110px 110px 110px 140px;
-      min-width: 720px;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 680px;
+      background: white;
     }
 
-    .history-row,
-    .history-head {
-      display: contents;
-    }
-
-    .history-cell {
-      padding: 14px 12px;
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
       border-bottom: 1px solid var(--line);
       font-size: 14px;
     }
 
-    .history-head .history-cell {
-      position: sticky;
-      top: 0;
-      background: var(--surface-strong);
-      z-index: 1;
+    th {
+      background: #f9fafb;
       font-weight: 800;
     }
 
-    .history-empty {
-      padding: 28px;
-      text-align: center;
-      color: var(--muted);
+    .user-box {
+      display: grid;
+      gap: 10px;
     }
 
-    .success-text { color: var(--success); font-weight: 700; }
-    .danger-text { color: var(--danger); font-weight: 700; }
-    .warn-text { color: var(--warning); font-weight: 700; }
-
-    .footer-bar {
-      margin-top: 18px;
+    .user-row {
       display: flex;
       justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
+      gap: 14px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
     }
 
-    .error-box {
-      margin-top: 16px;
-      padding: 14px 16px;
-      border-radius: 16px;
-      background: rgba(239,68,68,0.10);
-      color: var(--danger);
-      font-weight: 700;
-      display: none;
-    }
-
-    .show { display: block; }
-
-    @media (max-width: 1120px) {
-      .toolbar-grid,
-      .control-grid,
-      .metrics-grid { grid-template-columns: 1fr; }
-      .top-actions { grid-template-columns: 1fr; width: 100%; }
-      .history-tools { grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 720px) {
-      .app-shell { padding: 14px; }
-      .panel, .metric-card, .history-card, .toolbar { padding: 16px; }
-      .title-side { grid-template-columns: 1fr; }
-      .brand-icon, .mini-icon { width: 52px; height: 52px; }
-      .pump-button { min-height: 66px; font-size: 21px; }
-      .alert-box { font-size: 24px; }
+    @media (max-width: 900px) {
+      .grid-3, .grid-2 {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
-<body class="theme-1">
-  <section id="loginScreen" class="login-screen">
-    <div class="login-card glass">
-      <div class="brand">
-        <div class="brand-icon">🌿</div>
-        <div>
-          <h1>Smart Garden</h1>
-          <p>เข้าสู่ระบบเพื่อดูแดชบอร์ดและประวัติการเปลี่ยนข้อมูล</p>
-        </div>
-      </div>
+<body>
+  <section id="loginPage" class="login-page">
+    <div class="login-card">
+      <h1>Login</h1>
+      <p>เข้าสู่ระบบ</p>
 
       <div class="field">
         <label for="username">Username</label>
-        <input id="username" type="text" placeholder="กรอกชื่อผู้ใช้" value="admin" />
+        <input id="username" type="text" autocomplete="username" />
       </div>
 
       <div class="field">
         <label for="password">Password</label>
-        <input id="password" type="password" placeholder="กรอกรหัสผ่าน" value="1234" />
+        <input id="password" type="password" autocomplete="current-password" />
       </div>
 
       <button id="loginButton" class="btn btn-primary">เข้าสู่ระบบ</button>
-
-      <div class="login-note">
-        ค่าเริ่มต้นสำหรับเดโม: <strong>admin / 1234</strong><br />
-        เปลี่ยนได้ภายหลังใน Render Environment Variables
-      </div>
-
-      <div id="loginError" class="error-box"></div>
+      <div id="loginError" class="error"></div>
     </div>
   </section>
 
-  <main id="appScreen" class="app-shell hidden">
+  <main id="appPage" class="wrap hidden">
     <div class="topbar">
-      <div class="title-side">
-        <div class="mini-icon">💧</div>
-        <div class="title-block">
-          <h1 id="deviceName">Smart Garden Dashboard</h1>
-          <p>หน้าแดชบอร์ดสะอาดตา พร้อมธีม 9 แบบ และประวัติทุก 5 นาที</p>
-        </div>
+      <div class="title">
+        <h1 id="deviceName">Smart Garden Dashboard</h1>
+        <p>ระบบติดตามและควบคุม</p>
       </div>
 
-      <div class="top-actions">
-        <div class="status-chip"><strong>ผู้ใช้:</strong> <span id="currentUser">admin</span></div>
-        <div class="status-chip"><strong>สถานะ:</strong> <span id="onlineText">กำลังเชื่อมต่อ...</span></div>
+      <div class="top-right">
+        <div class="pill">ผู้ใช้: <strong id="currentUser">-</strong></div>
+        <div class="pill">สถานะ: <strong id="onlineText">กำลังเชื่อมต่อ...</strong></div>
         <button id="logoutButton" class="btn btn-danger">ออกจากระบบ</button>
       </div>
     </div>
 
-    <section class="toolbar glass">
-      <div class="toolbar-grid">
-        <div>
-          <div class="section-title">Theme</div>
-          <div class="section-sub">เลือกธีมสบายตาได้ 9 แบบ</div>
-        </div>
-
-        <select id="themeSelect" class="theme-select">
-          <option value="theme-1">Theme 1 - Sky Clean</option>
-          <option value="theme-2">Theme 2 - Soft Green</option>
-          <option value="theme-3">Theme 3 - Warm Peach</option>
-          <option value="theme-4">Theme 4 - Lavender Blue</option>
-          <option value="theme-5">Theme 5 - Aqua Glass</option>
-          <option value="theme-6">Theme 6 - Purple Calm</option>
-          <option value="theme-7">Theme 7 - Cream Sand</option>
-          <option value="theme-8">Theme 8 - Mint Clean</option>
-          <option value="theme-9">Theme 9 - Mono Minimal</option>
-        </select>
-
-        <div class="pill">
-          <strong>History interval:</strong>
-          <span id="historyIntervalText">5 นาที</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="control-grid">
-      <div class="panel glass">
-        <div class="panel-head">
-          <div>
-            <h3>Pump</h3>
-            <div class="subtle">ควบคุมปั๊มน้ำจากหน้าเว็บ</div>
-          </div>
-          <div class="pill"><strong>Now:</strong> <span id="pumpStatusText">OFF</span></div>
-        </div>
-        <button id="pumpButton" class="pump-button">OFF</button>
+    <section class="grid-3">
+      <div class="card">
+        <h3>Pump</h3>
+        <div class="sub">ควบคุมปั๊มน้ำ</div>
+        <button id="pumpButton" class="pump-btn">OFF</button>
       </div>
 
-      <div class="panel glass">
-        <div class="panel-head">
-          <div>
-            <h3>Auto Mode</h3>
-            <div class="subtle">สลับโหมดทำงานอัตโนมัติ</div>
-          </div>
-        </div>
+      <div class="card">
+        <h3>Auto Mode</h3>
+        <div class="sub" id="autoModeLabel">ปิดโหมดอัตโนมัติ</div>
         <div class="switch-row">
-          <div>
-            <div id="autoModeLabel" style="font-weight:800;">ปิดโหมดอัตโนมัติ</div>
-            <div class="subtle">ระบบจะอัปเดตสถานะทันทีเมื่อกด</div>
-          </div>
+          <span></span>
           <label class="switch">
             <input id="autoModeSwitch" type="checkbox" />
             <span class="slider"></span>
@@ -650,118 +365,71 @@
         </div>
       </div>
 
-      <div class="panel glass">
-        <div class="panel-head">
-          <div>
-            <h3>Alert</h3>
-            <div class="subtle">สถานะล่าสุดจากระบบ</div>
-          </div>
-          <div class="pill"><strong>ล่าสุด:</strong> <span id="lastUpdatedMini">-</span></div>
-        </div>
-        <div class="alert-box">
-          <div class="alert-icon">💧</div>
-          <div id="alertText">-</div>
-        </div>
+      <div class="card">
+        <h3>Alert</h3>
+        <div class="sub">สถานะล่าสุด</div>
+        <div id="alertText" class="value">-</div>
       </div>
     </section>
 
-    <section class="metrics-grid">
-      <div class="metric-card glass">
-        <div class="metric-header">
-          <div>
-            <h3>Soil</h3>
-            <div class="metric-sub">ค่าความชื้นดิน</div>
-          </div>
-          <span class="badge soil-badge">Sensor</span>
-        </div>
-        <div class="gauge-wrap">
-          <div id="soilGauge" class="gauge" style="--value:0; --accent: var(--soil);">
-            <div class="gauge-value"><span id="soilValue">0</span><span class="gauge-unit"> %</span></div>
-          </div>
-          <div class="gauge-range"><span>0</span><span>4095</span></div>
-        </div>
+    <section class="grid-3">
+      <div class="card metric">
+        <div class="label">Soil</div>
+        <div id="soilValue" class="value soil">0</div>
       </div>
 
-      <div class="metric-card glass">
-        <div class="metric-header">
-          <div>
-            <h3>Water</h3>
-            <div class="metric-sub">ระดับน้ำในถัง</div>
-          </div>
-          <span class="badge water-badge">Sensor</span>
-        </div>
-        <div class="gauge-wrap">
-          <div id="waterGauge" class="gauge" style="--value:0; --accent: var(--water);">
-            <div class="gauge-value"><span id="waterValue">0</span><span class="gauge-unit"> %</span></div>
-          </div>
-          <div class="gauge-range"><span>0</span><span>4095</span></div>
-        </div>
+      <div class="card metric">
+        <div class="label">Water</div>
+        <div id="waterValue" class="value water">0</div>
       </div>
 
-      <div class="metric-card glass">
-        <div class="metric-header">
-          <div>
-            <h3>Temp</h3>
-            <div class="metric-sub">อุณหภูมิปัจจุบัน</div>
-          </div>
-          <span class="badge temp-badge">Sensor</span>
-        </div>
-        <div class="gauge-wrap">
-          <div id="tempGauge" class="gauge" style="--value:0; --accent: var(--temp);">
-            <div class="gauge-value"><span id="tempValue">0</span><span class="gauge-unit"> °C</span></div>
-          </div>
-          <div class="gauge-range"><span>0</span><span>100</span></div>
-        </div>
+      <div class="card metric">
+        <div class="label">Temp</div>
+        <div id="tempValue" class="value temp">0</div>
       </div>
     </section>
 
-    <section class="bottom-grid">
-      <div class="history-card glass">
-        <div class="panel-head">
+    <section class="grid-2">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;">
           <div>
-            <h3>History Log</h3>
-            <div class="section-sub">เก็บค่าการเปลี่ยนข้อมูลทุกประมาณ 5 นาที</div>
+            <h3 style="margin-bottom:6px;">History</h3>
+            <div class="sub" style="margin:0;">ข้อมูลย้อนหลัง</div>
           </div>
-          <button id="refreshHistoryButton" class="btn btn-secondary">รีเฟรช Log</button>
+          <button id="refreshHistoryButton" class="btn btn-light">รีเฟรช</button>
         </div>
 
-        <div class="history-tools">
-          <input id="historySearch" class="search-box" type="text" placeholder="ค้นหา เช่น น้ำต่ำ, ON, OFF, ค่าอุณหภูมิ..." />
-          <div class="pill"><strong>ทั้งหมด:</strong> <span id="historyCount">0</span> รายการ</div>
-          <div class="pill"><strong>อัปเดตล่าสุด:</strong> <span id="lastUpdated">-</span></div>
-        </div>
-
-        <div class="history-list">
-          <div class="history-table" id="historyTable">
-            <div class="history-head">
-              <div class="history-cell">เวลา</div>
-              <div class="history-cell">Pump</div>
-              <div class="history-cell">Auto</div>
-              <div class="history-cell">Soil</div>
-              <div class="history-cell">Water</div>
-              <div class="history-cell">Temp / Alert</div>
-            </div>
-          </div>
-          <div id="historyEmpty" class="history-empty hidden">ยังไม่มีประวัติ</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>เวลา</th>
+                <th>Pump</th>
+                <th>Auto</th>
+                <th>Soil</th>
+                <th>Water</th>
+                <th>Temp</th>
+                <th>Alert</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
         </div>
       </div>
+
+      <div class="card">
+        <h3>ข้อมูลผู้ใช้</h3>
+        <div class="sub">ผู้ที่เข้าสู่ระบบ</div>
+        <div id="userInfo" class="user-box"></div>
+      </div>
     </section>
-
-    <div class="footer-bar">
-      <div class="pill"><strong>รีเฟรชสด:</strong> <span id="refreshMs">5000</span> ms</div>
-      <div class="pill"><strong>ระบบ:</strong> <span id="systemStatus">พร้อมใช้งาน</span></div>
-    </div>
-
-    <div id="errorBox" class="error-box"></div>
   </main>
 
   <script>
     const state = {
       token: localStorage.getItem("app_login_token") || "",
-      username: localStorage.getItem("app_login_user") || "",
+      user: JSON.parse(localStorage.getItem("app_login_user") || "null"),
       refreshMs: 5000,
-      historyIntervalMs: 300000,
-      historyItems: [],
       values: {
         pump: false,
         autoMode: false,
@@ -769,160 +437,127 @@
         water: 0,
         temp: 0,
         alert: "-"
-      },
-      ranges: {
-        soilMin: 0,
-        soilMax: 4095,
-        waterMin: 0,
-        waterMax: 4095,
-        tempMin: 0,
-        tempMax: 100
       }
     };
 
     const el = {
-      body: document.body,
-      loginScreen: document.getElementById("loginScreen"),
-      appScreen: document.getElementById("appScreen"),
+      loginPage: document.getElementById("loginPage"),
+      appPage: document.getElementById("appPage"),
       username: document.getElementById("username"),
       password: document.getElementById("password"),
       loginButton: document.getElementById("loginButton"),
       loginError: document.getElementById("loginError"),
       logoutButton: document.getElementById("logoutButton"),
       currentUser: document.getElementById("currentUser"),
-      themeSelect: document.getElementById("themeSelect"),
       deviceName: document.getElementById("deviceName"),
       onlineText: document.getElementById("onlineText"),
       pumpButton: document.getElementById("pumpButton"),
-      pumpStatusText: document.getElementById("pumpStatusText"),
       autoModeSwitch: document.getElementById("autoModeSwitch"),
       autoModeLabel: document.getElementById("autoModeLabel"),
       alertText: document.getElementById("alertText"),
-      lastUpdatedMini: document.getElementById("lastUpdatedMini"),
-      soilGauge: document.getElementById("soilGauge"),
-      waterGauge: document.getElementById("waterGauge"),
-      tempGauge: document.getElementById("tempGauge"),
       soilValue: document.getElementById("soilValue"),
       waterValue: document.getElementById("waterValue"),
       tempValue: document.getElementById("tempValue"),
-      lastUpdated: document.getElementById("lastUpdated"),
-      refreshMs: document.getElementById("refreshMs"),
-      systemStatus: document.getElementById("systemStatus"),
-      errorBox: document.getElementById("errorBox"),
-      historyIntervalText: document.getElementById("historyIntervalText"),
-      historySearch: document.getElementById("historySearch"),
-      historyCount: document.getElementById("historyCount"),
-      historyTable: document.getElementById("historyTable"),
-      historyEmpty: document.getElementById("historyEmpty"),
-      refreshHistoryButton: document.getElementById("refreshHistoryButton")
+      historyBody: document.getElementById("historyBody"),
+      refreshHistoryButton: document.getElementById("refreshHistoryButton"),
+      userInfo: document.getElementById("userInfo")
     };
 
-    function showError(target, message) {
-      target.textContent = message;
-      target.classList.add("show");
-    }
-
-    function clearError(target) {
-      target.textContent = "";
-      target.classList.remove("show");
-    }
-
-    function clamp(value, min, max) {
-      return Math.min(Math.max(value, min), max);
-    }
-
-    function percentFromRange(value, min, max) {
-      if (max <= min) return 0;
-      return ((value - min) / (max - min)) * 100;
-    }
-
-    function setGauge(gaugeEl, valueEl, rawValue, min, max, digits = 0) {
-      const percent = clamp(percentFromRange(rawValue, min, max), 0, 100);
-      gaugeEl.style.setProperty("--value", percent.toFixed(1));
-      valueEl.textContent = Number(rawValue).toLocaleString(undefined, {
-        minimumFractionDigits: digits,
-        maximumFractionDigits: digits
-      });
-    }
-
-    function formatThaiDate(isoString) {
-      if (!isoString) return "-";
-      const d = new Date(isoString);
-      if (Number.isNaN(d.getTime())) return isoString;
-      return d.toLocaleString("th-TH", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
-      });
-    }
-
-    function formatDuration(ms) {
-      const minutes = Math.round(ms / 60000);
-      return `${minutes} นาที`;
-    }
-
-    function getSavedTheme() {
-      return localStorage.getItem("dashboard_theme") || "theme-1";
-    }
-
-    function applyTheme(themeName) {
-      for (let i = 1; i <= 9; i++) {
-        el.body.classList.remove(`theme-${i}`);
-      }
-      el.body.classList.add(themeName);
-      localStorage.setItem("dashboard_theme", themeName);
-      el.themeSelect.value = themeName;
+    function formatDateTime(value) {
+      if (!value) return "-";
+      const d = new Date(value);
+      return d.toLocaleString("th-TH");
     }
 
     function setLoggedIn(isLoggedIn) {
-      el.loginScreen.classList.toggle("hidden", isLoggedIn);
-      el.appScreen.classList.toggle("hidden", !isLoggedIn);
+      el.loginPage.classList.toggle("hidden", isLoggedIn);
+      el.appPage.classList.toggle("hidden", !isLoggedIn);
     }
 
-    async function postJson(url, body) {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
+    async function fetchJson(url, options = {}) {
+      const res = await fetch(url, options);
       const data = await res.json();
-      if (!data.success) throw new Error(data.error || "เกิดข้อผิดพลาด");
+      if (!data.success) {
+        throw new Error(data.error || "เกิดข้อผิดพลาด");
+      }
       return data;
     }
 
-    async function fetchJson(url) {
-      const res = await fetch(url, { cache: "no-store" });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || "โหลดข้อมูลไม่สำเร็จ");
-      return data;
+    function renderUserInfo(user) {
+      if (!user) {
+        el.userInfo.innerHTML = "";
+        return;
+      }
+
+      el.userInfo.innerHTML = `
+        <div class="user-row"><span>Username</span><strong>${user.username || "-"}</strong></div>
+        <div class="user-row"><span>Created</span><strong>${formatDateTime(user.createdAt)}</strong></div>
+        <div class="user-row"><span>Last login</span><strong>${formatDateTime(user.lastLoginAt)}</strong></div>
+        <div class="user-row"><span>Login count</span><strong>${user.loginCount || 0}</strong></div>
+      `;
     }
 
-    async function doLogin() {
+    function renderStatus() {
+      el.pumpButton.textContent = state.values.pump ? "ON" : "OFF";
+      el.pumpButton.classList.toggle("on", state.values.pump);
+      el.autoModeSwitch.checked = !!state.values.autoMode;
+      el.autoModeLabel.textContent = state.values.autoMode ? "เปิดโหมดอัตโนมัติ" : "ปิดโหมดอัตโนมัติ";
+      el.alertText.textContent = state.values.alert || "-";
+      el.soilValue.textContent = Number(state.values.soil || 0).toLocaleString();
+      el.waterValue.textContent = Number(state.values.water || 0).toLocaleString();
+      el.tempValue.textContent = Number(state.values.temp || 0).toLocaleString();
+    }
+
+    function renderHistory(items) {
+      el.historyBody.innerHTML = "";
+
+      for (const item of items) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${formatDateTime(item.timestamp)}</td>
+          <td>${item.values?.pump ? "ON" : "OFF"}</td>
+          <td>${item.values?.autoMode ? "ON" : "OFF"}</td>
+          <td>${Number(item.values?.soil || 0).toLocaleString()}</td>
+          <td>${Number(item.values?.water || 0).toLocaleString()}</td>
+          <td>${Number(item.values?.temp || 0).toLocaleString()}</td>
+          <td>${item.values?.alert || "-"}</td>
+        `;
+        el.historyBody.appendChild(tr);
+      }
+    }
+
+    async function login() {
       try {
-        clearError(el.loginError);
-        const data = await postJson("/api/login", {
-          username: el.username.value,
-          password: el.password.value
+        el.loginError.textContent = "";
+
+        const data = await fetchJson("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: el.username.value.trim(),
+            password: el.password.value.trim()
+          })
         });
 
         state.token = data.token;
-        state.username = data.username;
+        state.user = data.user;
+
         localStorage.setItem("app_login_token", data.token);
-        localStorage.setItem("app_login_user", data.username);
-        el.currentUser.textContent = data.username;
+        localStorage.setItem("app_login_user", JSON.stringify(data.user));
+
+        el.currentUser.textContent = data.user?.username || "-";
+        renderUserInfo(data.user);
         setLoggedIn(true);
-        await initDashboard();
+
+        await initApp();
       } catch (error) {
-        showError(el.loginError, error.message);
+        el.loginError.textContent = error.message;
       }
     }
 
     function logout() {
       state.token = "";
-      state.username = "";
+      state.user = null;
       localStorage.removeItem("app_login_token");
       localStorage.removeItem("app_login_user");
       setLoggedIn(false);
@@ -930,157 +565,65 @@
 
     async function fetchConfig() {
       const data = await fetchJson("/api/config");
-      state.refreshMs = data.config.refreshMs || 5000;
-      state.historyIntervalMs = data.config.historyIntervalMs || 300000;
-      state.ranges = data.config.ranges || state.ranges;
-      el.deviceName.textContent = data.config.deviceName || "Smart Garden Dashboard";
-      el.refreshMs.textContent = state.refreshMs;
-      el.historyIntervalText.textContent = formatDuration(state.historyIntervalMs);
+      state.refreshMs = data.config?.refreshMs || 5000;
+      el.deviceName.textContent = data.config?.deviceName || "Smart Garden Dashboard";
     }
 
     async function fetchStatus() {
       const data = await fetchJson("/api/status");
       state.values = data.values;
-      el.lastUpdated.textContent = formatThaiDate(data.updatedAt);
-      el.lastUpdatedMini.textContent = formatThaiDate(data.updatedAt);
       el.onlineText.textContent = "ออนไลน์";
-      el.systemStatus.textContent = "พร้อมใช้งาน";
-      clearError(el.errorBox);
       renderStatus();
     }
 
     async function fetchHistory() {
       const data = await fetchJson("/api/history");
-      state.historyItems = Array.isArray(data.items) ? data.items : [];
-      el.historyCount.textContent = data.count || state.historyItems.length;
-      renderHistory();
-    }
-
-    function renderStatus() {
-      el.pumpButton.textContent = state.values.pump ? "ON" : "OFF";
-      el.pumpButton.classList.toggle("on", state.values.pump);
-      el.pumpStatusText.textContent = state.values.pump ? "ON" : "OFF";
-      el.pumpStatusText.className = state.values.pump ? "success-text" : "danger-text";
-
-      el.autoModeSwitch.checked = !!state.values.autoMode;
-      el.autoModeLabel.textContent = state.values.autoMode ? "เปิดโหมดอัตโนมัติ" : "ปิดโหมดอัตโนมัติ";
-      el.alertText.textContent = state.values.alert || "-";
-      el.alertText.className = state.values.alert === "น้ำต่ำ" ? "danger-text" : "success-text";
-
-      setGauge(el.soilGauge, el.soilValue, state.values.soil, state.ranges.soilMin, state.ranges.soilMax, 0);
-      setGauge(el.waterGauge, el.waterValue, state.values.water, state.ranges.waterMin, state.ranges.waterMax, 0);
-      setGauge(el.tempGauge, el.tempValue, state.values.temp, state.ranges.tempMin, state.ranges.tempMax, 0);
-    }
-
-    function historyMatchesSearch(item, keyword) {
-      if (!keyword) return true;
-      const haystack = [
-        formatThaiDate(item.timestamp),
-        item.values?.pump ? "on" : "off",
-        item.values?.autoMode ? "auto on" : "auto off",
-        String(item.values?.soil ?? ""),
-        String(item.values?.water ?? ""),
-        String(item.values?.temp ?? ""),
-        String(item.values?.alert ?? "")
-      ].join(" ").toLowerCase();
-
-      return haystack.includes(keyword.toLowerCase());
-    }
-
-    function renderHistory() {
-      const existingRows = el.historyTable.querySelectorAll(".history-data");
-      existingRows.forEach((row) => row.remove());
-
-      const keyword = el.historySearch.value.trim();
-      const filtered = state.historyItems.filter((item) => historyMatchesSearch(item, keyword));
-
-      if (!filtered.length) {
-        el.historyEmpty.classList.remove("hidden");
-        return;
-      }
-
-      el.historyEmpty.classList.add("hidden");
-
-      filtered.forEach((item) => {
-        const values = item.values || {};
-        const cells = [
-          formatThaiDate(item.timestamp),
-          values.pump ? "ON" : "OFF",
-          values.autoMode ? "ON" : "OFF",
-          Number(values.soil ?? 0).toLocaleString(),
-          Number(values.water ?? 0).toLocaleString(),
-          `${Number(values.temp ?? 0).toLocaleString()} °C / ${values.alert || "-"}`
-        ];
-
-        cells.forEach((text, index) => {
-          const cell = document.createElement("div");
-          cell.className = "history-cell history-data";
-          cell.textContent = text;
-
-          if (index === 1) cell.classList.add(values.pump ? "success-text" : "danger-text");
-          if (index === 2) cell.classList.add(values.autoMode ? "success-text" : "warn-text");
-          if (index === 5 && String(values.alert || "").includes("ต่ำ")) cell.classList.add("danger-text");
-
-          el.historyTable.appendChild(cell);
-        });
-      });
+      renderHistory(data.items || []);
     }
 
     async function togglePump() {
-      try {
-        el.systemStatus.textContent = "กำลังสั่งงาน...";
-        await postJson("/api/toggle/pump", { value: !state.values.pump });
-        await fetchStatus();
-      } catch (error) {
-        showError(el.errorBox, error.message);
-        el.systemStatus.textContent = "เกิดข้อผิดพลาด";
-      }
+      await fetchJson("/api/toggle/pump", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value: !state.values.pump })
+      });
+      await fetchStatus();
     }
 
     async function toggleAutoMode() {
-      try {
-        el.systemStatus.textContent = "กำลังสั่งงาน...";
-        await postJson("/api/toggle/auto-mode", { value: el.autoModeSwitch.checked });
-        await fetchStatus();
-      } catch (error) {
-        showError(el.errorBox, error.message);
-        el.systemStatus.textContent = "เกิดข้อผิดพลาด";
-        el.autoModeSwitch.checked = !el.autoModeSwitch.checked;
-      }
+      await fetchJson("/api/toggle/auto-mode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ value: el.autoModeSwitch.checked })
+      });
+      await fetchStatus();
     }
 
-    async function initDashboard() {
-      try {
-        el.currentUser.textContent = state.username || "admin";
-        applyTheme(getSavedTheme());
-        await fetchConfig();
-        await Promise.all([fetchStatus(), fetchHistory()]);
-      } catch (error) {
-        showError(el.errorBox, error.message);
-        el.onlineText.textContent = "เชื่อมต่อไม่สำเร็จ";
-      }
+    async function initApp() {
+      await fetchConfig();
+      await fetchStatus();
+      await fetchHistory();
     }
 
     function bindEvents() {
-      el.loginButton.addEventListener("click", doLogin);
+      el.loginButton.addEventListener("click", login);
       el.password.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") doLogin();
+        if (e.key === "Enter") login();
       });
       el.logoutButton.addEventListener("click", logout);
-      el.themeSelect.addEventListener("change", (e) => applyTheme(e.target.value));
       el.pumpButton.addEventListener("click", togglePump);
       el.autoModeSwitch.addEventListener("change", toggleAutoMode);
-      el.historySearch.addEventListener("input", renderHistory);
       el.refreshHistoryButton.addEventListener("click", fetchHistory);
     }
 
     async function boot() {
       bindEvents();
-      applyTheme(getSavedTheme());
 
-      if (state.token) {
+      if (state.token && state.user) {
+        el.currentUser.textContent = state.user.username || "-";
+        renderUserInfo(state.user);
         setLoggedIn(true);
-        await initDashboard();
+        await initApp();
       } else {
         setLoggedIn(false);
       }
@@ -1089,10 +632,8 @@
         if (!state.token) return;
         try {
           await fetchStatus();
-        } catch (error) {
+        } catch {
           el.onlineText.textContent = "ออฟไลน์";
-          el.systemStatus.textContent = "ตรวจสอบการเชื่อมต่อ";
-          showError(el.errorBox, error.message);
         }
       }, state.refreshMs);
 
@@ -1100,9 +641,7 @@
         if (!state.token) return;
         try {
           await fetchHistory();
-        } catch (error) {
-          showError(el.errorBox, error.message);
-        }
+        } catch {}
       }, 60000);
     }
 
