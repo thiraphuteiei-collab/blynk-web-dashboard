@@ -196,6 +196,7 @@ button,input,select,textarea{font:inherit}
   opacity:.65;
   cursor:not-allowed;
   transform:none;
+  box-shadow:none!important;
 }
 
 .btn-primary{
@@ -259,7 +260,7 @@ button,input,select,textarea{font:inherit}
   border:1px solid var(--line);
   border-radius:999px;
   padding:10px 14px;
-  box-shadow:var(--shadow-soft);
+  box-shadow:0 8px 20px rgba(15,23,42,0.05);
   font-size:14px;
   color:#374151;
 }
@@ -521,7 +522,7 @@ tbody tr:hover{background:#fafcff}
   color:#fff;
   font-size:14px;
   font-weight:700;
-  box-shadow:0 16px 30px rgba(15,23,42,0.18);
+  box-shadow:0 12px 24px rgba(15,23,42,0.14);
   animation:toast-in .2s ease;
 }
 
@@ -561,7 +562,7 @@ tbody tr:hover{background:#fafcff}
   max-width:420px;
   background:#fff;
   border-radius:20px;
-  box-shadow:0 24px 50px rgba(15,23,42,0.22);
+  box-shadow:0 20px 40px rgba(15,23,42,0.18);
   padding:22px;
   position:relative;
 }
