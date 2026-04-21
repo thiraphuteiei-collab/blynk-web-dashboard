@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -16,6 +17,7 @@ const HISTORY_MAX_ITEMS = Number(process.env.HISTORY_MAX_ITEMS || 500);
 
 const USERS_FILE = path.join(__dirname, "users.json");
 const HISTORY_FILE = path.join(__dirname, "history.json");
+const RESET_TOKENS_FILE = path.join(__dirname, "reset_tokens.json");
 
 app.use(cors());
 app.use(express.json());
@@ -174,6 +176,31 @@ async function collectHistorySnapshot() {
   } catch {}
 }
 
+function createResetToken(userId) {
+  const tokens = readJson(RESET_TOKENS_FILE, []);
+  const token = crypto.randomBytes(24).toString("hex");
+  const expiresAt = Date.now() + 15 * 60 * 1000;
+
+  const filtered = tokens.filter((t) => t.userId !== userId && t.expiresAt > Date.now());
+  filtered.push({ token, userId, expiresAt });
+
+  writeJson(RESET_TOKENS_FILE, filtered);
+  return token;
+}
+
+function getResetTokenRecord(token) {
+  const tokens = readJson(RESET_TOKENS_FILE, []);
+  return tokens.find((t) => t.token === token && t.expiresAt > Date.now()) || null;
+}
+
+function removeResetToken(token) {
+  const tokens = readJson(RESET_TOKENS_FILE, []);
+  writeJson(
+    RESET_TOKENS_FILE,
+    tokens.filter((t) => t.token !== token)
+  );
+}
+
 app.get("/", (req, res) => res.redirect("/login.html"));
 
 app.get("/api/config", (req, res) => {
@@ -247,6 +274,64 @@ app.post("/api/login", (req, res) => {
     token: `token_${user.id}`,
     user: sanitizeUser(user)
   });
+});
+
+app.post("/api/forgot-password", (req, res) => {
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const user = findUserByEmail(email);
+
+  if (!user) {
+    return res.status(404).json({ success: false, error: "Email not found" });
+  }
+
+  const token = createResetToken(user.id);
+
+  return res.json({
+    success: true,
+    message: "Reset link created",
+    resetUrl: `/reset-password.html?token=${token}`
+  });
+});
+
+app.get("/api/reset-password/:token", (req, res) => {
+  const record = getResetTokenRecord(req.params.token);
+
+  if (!record) {
+    return res.status(400).json({ success: false, error: "Reset link is invalid or expired" });
+  }
+
+  return res.json({ success: true });
+});
+
+app.post("/api/reset-password/:token", (req, res) => {
+  const record = getResetTokenRecord(req.params.token);
+
+  if (!record) {
+    return res.status(400).json({ success: false, error: "Reset link is invalid or expired" });
+  }
+
+  const newPassword = String(req.body?.newPassword || "").trim();
+  const confirmPassword = String(req.body?.confirmPassword || "").trim();
+
+  if (!newPassword || !confirmPassword) {
+    return res.status(400).json({ success: false, error: "Please fill in all fields" });
+  }
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ success: false, error: "Passwords do not match" });
+  }
+
+  const user = findUserById(record.userId);
+
+  if (!user) {
+    return res.status(404).json({ success: false, error: "User not found" });
+  }
+
+  user.password = newPassword;
+  updateUser(user);
+  removeResetToken(record.token);
+
+  return res.json({ success: true, message: "Password reset successful" });
 });
 
 app.get("/api/profile/:id", (req, res) => {
@@ -338,6 +423,7 @@ app.post("/api/toggle/auto-mode", async (req, res) => {
 
 ensureJsonFile(USERS_FILE, []);
 ensureJsonFile(HISTORY_FILE, []);
+ensureJsonFile(RESET_TOKENS_FILE, []);
 collectHistorySnapshot();
 setInterval(collectHistorySnapshot, HISTORY_INTERVAL_MS);
 
