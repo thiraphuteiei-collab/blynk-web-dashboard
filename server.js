@@ -10,8 +10,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const BLYNK_BASE_URL = process.env.BLYNK_BASE_URL || "https://blynk.cloud";
 const BLYNK_TOKEN = process.env.BLYNK_AUTH_TOKEN || "";
-const LOGIN_USERNAME = process.env.LOGIN_USERNAME || "admin";
-const LOGIN_PASSWORD = process.env.LOGIN_PASSWORD || "1234";
 const HISTORY_INTERVAL_MS = Number(process.env.HISTORY_INTERVAL_MS || 300000);
 const HISTORY_MAX_ITEMS = Number(process.env.HISTORY_MAX_ITEMS || 500);
 
@@ -91,23 +89,24 @@ function saveUsers() {
   fs.writeFileSync(USERS_FILE, JSON.stringify(usersCache, null, 2), "utf8");
 }
 
-function upsertUserLogin(username) {
-  const now = new Date().toISOString();
-  const found = usersCache.find((u) => u.username === username);
+function sanitizeUser(user) {
+  if (!user) return null;
 
-  if (found) {
-    found.loginCount = Number(found.loginCount || 0) + 1;
-    found.lastLoginAt = now;
-  } else {
-    usersCache.push({
-      username,
-      createdAt: now,
-      lastLoginAt: now,
-      loginCount: 1
-    });
-  }
+  return {
+    id: user.id,
+    username: user.username,
+    fullName: user.fullName,
+    email: user.email,
+    createdAt: user.createdAt,
+    lastLoginAt: user.lastLoginAt,
+    loginCount: user.loginCount || 0
+  };
+}
 
-  saveUsers();
+function findUserByUsername(username) {
+  return usersCache.find(
+    (u) => String(u.username || "").toLowerCase() === String(username || "").toLowerCase()
+  );
 }
 
 function normalizePin(pin) {
@@ -211,24 +210,91 @@ app.get("/api/config", (req, res) => {
   res.json({ success: true, config: DASHBOARD_CONFIG });
 });
 
+app.post("/api/register", (req, res) => {
+  const fullName = String(req.body?.fullName || "").trim();
+  const email = String(req.body?.email || "").trim().toLowerCase();
+  const username = String(req.body?.username || "").trim();
+  const password = String(req.body?.password || "").trim();
+
+  if (!fullName || !email || !username || !password) {
+    return res.status(400).json({
+      success: false,
+      error: "กรอกข้อมูลให้ครบ"
+    });
+  }
+
+  if (!email.includes("@")) {
+    return res.status(400).json({
+      success: false,
+      error: "อีเมลไม่ถูกต้อง"
+    });
+  }
+
+  const usernameExists = usersCache.some(
+    (u) => String(u.username || "").toLowerCase() === username.toLowerCase()
+  );
+
+  if (usernameExists) {
+    return res.status(400).json({
+      success: false,
+      error: "ชื่อผู้ใช้นี้ถูกใช้แล้ว"
+    });
+  }
+
+  const emailExists = usersCache.some(
+    (u) => String(u.email || "").toLowerCase() === email
+  );
+
+  if (emailExists) {
+    return res.status(400).json({
+      success: false,
+      error: "อีเมลนี้ถูกใช้แล้ว"
+    });
+  }
+
+  const now = new Date().toISOString();
+
+  const newUser = {
+    id: `user_${Date.now()}`,
+    fullName,
+    email,
+    username,
+    password,
+    createdAt: now,
+    lastLoginAt: now,
+    loginCount: 0
+  };
+
+  usersCache.push(newUser);
+  saveUsers();
+
+  return res.json({
+    success: true,
+    message: "สมัครสมาชิกสำเร็จ"
+  });
+});
+
 app.post("/api/login", (req, res) => {
   const username = String(req.body?.username || "").trim();
   const password = String(req.body?.password || "").trim();
 
-  if (username !== LOGIN_USERNAME || password !== LOGIN_PASSWORD) {
+  const user = findUserByUsername(username);
+
+  if (!user || user.password !== password) {
     return res.status(401).json({
       success: false,
       error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง"
     });
   }
 
-  upsertUserLogin(username);
-  const user = usersCache.find((u) => u.username === username);
+  user.lastLoginAt = new Date().toISOString();
+  user.loginCount = Number(user.loginCount || 0) + 1;
+  saveUsers();
 
   return res.json({
     success: true,
     token: "logged-in",
-    user
+    user: sanitizeUser(user)
   });
 });
 
