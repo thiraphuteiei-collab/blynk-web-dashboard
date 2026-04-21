@@ -9,7 +9,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BLYNK_BASE_URL = process.env.BLYNK_BASE_URL || "https://blynk.cloud";
-const BLYNK_TOKEN = process.env.BLYNK_AUTH_TOKEN || "";
+const BLYNK_TOKEN = process.env.BLYNK_AUTH_TOKEN || "NUIgGSv_S0Bl2k2liK83WX-4FIjo35wk";
 const LOGIN_USERNAME = process.env.LOGIN_USERNAME || "admin";
 const LOGIN_PASSWORD = process.env.LOGIN_PASSWORD || "1234";
 const HISTORY_INTERVAL_MS = Number(process.env.HISTORY_INTERVAL_MS || 300000);
