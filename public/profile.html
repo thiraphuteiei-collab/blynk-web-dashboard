@@ -43,12 +43,12 @@
             <label class="form-label" for="currentProfilePassword">รหัสผ่านปัจจุบัน</label>
             <div class="password-wrap">
               <input class="form-input" id="currentProfilePassword" type="password" />
-              <button id="toggleProfilePassword" class="password-toggle" type="button">แสดง</button>
+              <button id="toggleProfilePassword" class="password-toggle" type="button"></button>
             </div>
             <div id="currentProfilePasswordError" class="field-error"></div>
           </div>
 
-          <button id="saveProfileButton" class="btn btn-primary" type="button">บันทึกข้อมูล</button>
+          <button id="saveProfileButton" class="btn btn-primary" type="button" disabled>บันทึกข้อมูล</button>
           <div id="profileMessage" class="message"></div>
         </div>
       </div>
@@ -62,7 +62,7 @@
             <label class="form-label" for="currentPassword">รหัสผ่านปัจจุบัน</label>
             <div class="password-wrap">
               <input class="form-input" id="currentPassword" type="password" />
-              <button id="toggleCurrentPassword" class="password-toggle" type="button">แสดง</button>
+              <button id="toggleCurrentPassword" class="password-toggle" type="button"></button>
             </div>
             <div id="currentPasswordError" class="field-error"></div>
           </div>
@@ -71,7 +71,7 @@
             <label class="form-label" for="newPassword">รหัสผ่านใหม่</label>
             <div class="password-wrap">
               <input class="form-input" id="newPassword" type="password" />
-              <button id="toggleNewPassword" class="password-toggle" type="button">แสดง</button>
+              <button id="toggleNewPassword" class="password-toggle" type="button"></button>
             </div>
             <div class="field-hint">อย่างน้อย 8 ตัวอักษร</div>
             <div id="newPasswordError" class="field-error"></div>
@@ -94,6 +94,15 @@
     setupPasswordToggle("toggleNewPassword", "newPassword");
 
     const user = getStoredUser();
+    const saveProfileButton = document.getElementById("saveProfileButton");
+    let originalProfile = { username: "", email: "" };
+
+    function updateProfileButtonState() {
+      const username = document.getElementById("username").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const changed = username !== originalProfile.username || email !== originalProfile.email;
+      saveProfileButton.disabled = !changed;
+    }
 
     async function loadProfile() {
       const data = await fetchJson(`/api/profile/${user.id}`);
@@ -101,7 +110,15 @@
 
       document.getElementById("username").value = profile.username || "";
       document.getElementById("email").value = profile.email || "";
+      originalProfile = {
+        username: profile.username || "",
+        email: profile.email || ""
+      };
+      updateProfileButtonState();
     }
+
+    document.getElementById("username").addEventListener("input", updateProfileButtonState);
+    document.getElementById("email").addEventListener("input", updateProfileButtonState);
 
     document.getElementById("saveProfileButton").addEventListener("click", async () => {
       const username = document.getElementById("username").value.trim();
@@ -146,10 +163,12 @@
 
         setStoredUser(data.user);
         renderTopUser();
-        box.textContent = "บันทึกข้อมูลสำเร็จ";
+        box.textContent = "บันทึกข้อมูลเรียบร้อย";
         box.className = "message text-success";
         document.getElementById("currentProfilePassword").value = "";
-        showToast("บันทึกข้อมูลแล้ว", "success");
+        originalProfile = { username, email };
+        updateProfileButtonState();
+        showToast("บันทึกข้อมูลเรียบร้อย", "success");
       } catch (error) {
         box.textContent = error.message;
         box.className = "message text-danger";
