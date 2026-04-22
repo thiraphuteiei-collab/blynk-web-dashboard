@@ -128,6 +128,11 @@ function parseNumberOrNull(value) {
   return Number.isFinite(num) ? num : null;
 }
 
+function clampPercent(value) {
+  if (value === null || value === undefined) return null;
+  return Math.max(0, Math.min(100, Number(value)));
+}
+
 function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -136,10 +141,11 @@ function validatePassword(password) {
   return typeof password === "string" && password.length >= 8;
 }
 
-function computeAlertLabel(rawValue) {
+function computeAlertLabel(rawValue, waterValue) {
   const value = String(rawValue || "").trim().toLowerCase();
 
   if (!value || value === "null" || value === "undefined") {
+    if (waterValue !== null && waterValue <= 10) return "น้ำใกล้หมด";
     return "ไม่มีข้อมูล";
   }
 
@@ -158,16 +164,16 @@ function sensorText(type, value) {
   if (value === null) return "ไม่มีข้อมูลจากอุปกรณ์";
 
   if (type === "soil") {
-    if (value <= 300) return "ดินแห้งมาก";
-    if (value <= 1200) return "ดินค่อนข้างแห้ง";
-    if (value <= 2500) return "ดินชื้นปานกลาง";
+    if (value <= 20) return "ดินแห้งมาก";
+    if (value <= 40) return "ดินค่อนข้างแห้ง";
+    if (value <= 70) return "ดินชื้นปานกลาง";
     return "ดินชื้นมาก";
   }
 
   if (type === "water") {
-    if (value <= 300) return "น้ำในถังต่ำ";
-    if (value <= 1200) return "น้ำเหลือน้อย";
-    if (value <= 2500) return "น้ำอยู่ในระดับปานกลาง";
+    if (value <= 10) return "น้ำในถังต่ำ";
+    if (value <= 30) return "น้ำเหลือน้อย";
+    if (value <= 70) return "น้ำอยู่ในระดับปานกลาง";
     return "น้ำอยู่ในระดับดี";
   }
 
@@ -199,10 +205,10 @@ async function fetchSnapshot() {
     getValue(alert)
   ]);
 
-  const soilValue = parseNumberOrNull(soilRaw);
-  const waterValue = parseNumberOrNull(waterRaw);
+  const soilValue = clampPercent(parseNumberOrNull(soilRaw));
+  const waterValue = clampPercent(parseNumberOrNull(waterRaw));
   const tempValue = parseNumberOrNull(tempRaw);
-  const alertValue = computeAlertLabel(alertRaw);
+  const alertValue = computeAlertLabel(alertRaw, waterValue);
 
   return {
     updatedAt: new Date().toISOString(),
